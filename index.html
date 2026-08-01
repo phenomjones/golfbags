@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Golf Club Inventory</title>
+<style>
+  :root {
+    --bg: #f4f6f5;
+    --panel: #ffffff;
+    --ink: #18211c;
+    --muted: #6b756f;
+    --line: #dfe5e1;
+    --accent: #176b45;
+    --accent-2: #0f5134;
+    --danger: #a83232;
+    --chip: #e8f2ec;
+    --shadow: 0 12px 30px rgba(22, 48, 34, 0.08);
+    --driver-bg: #fff1d6;
+    --wood-bg: #e7f3ff;
+    --iron-bg: #edf7e8;
+    --wedge-bg: #f4eaff;
+    --putter-bg: #ffe9ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: linear-gradient(135deg, #123d2b, #1a7650);
+    color: white;
+    padding: 28px 20px 24px;
+  }
+  .header-inner, main { max-width: 1500px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: clamp(28px, 4vw, 42px); }
+  header p { margin: 0; opacity: .85; }
+  main { padding: 22px 20px 48px; }
+  .toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto auto auto;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  input, select, button, textarea {
+    font: inherit;
+  }
+  input, select, textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 11px;
+    background: white;
+    color: var(--ink);
+  }
+  button {
+    border: 0;
+    border-radius: 9px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .primary { background: var(--accent); color: white; }
+  .primary:hover { background: var(--accent-2); }
+  .secondary { background: white; color: var(--ink); border: 1px solid var(--line); }
+  .danger { background: #fff1f1; color: var(--danger); border: 1px solid #efd0d0; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .stat {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .stat strong { display: block; font-size: 24px; }
+  .stat.over-limit { border-color: #d98b00; background: #fff7e6; }
+  .stat.over-limit strong { color: #a85f00; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 12px; }
+  .tab { background: white; border: 1px solid var(--line); color: var(--ink); }
+  .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .table-wrap {
+    overflow-x: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 1050px; }
+  th, td { padding: 11px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  th {
+    position: sticky;
+    top: 0;
+    background: #f7faf8;
+    color: #4d5a53;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    z-index: 1;
+  }
+  td { font-size: 14px; }
+  tr:last-child td { border-bottom: 0; }
+  tr.category-driver td { background: var(--driver-bg); }
+  tr.category-wood td { background: var(--wood-bg); }
+  tr.category-iron td { background: var(--iron-bg); }
+  tr.category-wedge td { background: var(--wedge-bg); }
+  tr.category-putter td { background: var(--putter-bg); }
+  tr:hover td { filter: brightness(.985); }
+  .club-number { font-weight: 900; text-align: center; width: 54px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: 10px 0 14px; color: var(--muted); font-size: 12px; font-weight: 700; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+  .legend-swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,.08); border-radius: 4px; }
+  .club-name { font-weight: 800; }
+  .chip { display: inline-block; padding: 4px 8px; border-radius: 999px; background: var(--chip); color: var(--accent-2); font-size: 12px; font-weight: 700; }
+  .actions { display: flex; gap: 6px; }
+  .actions button { padding: 7px 9px; font-size: 12px; }
+  .empty { padding: 44px; text-align: center; color: var(--muted); }
+  dialog {
+    width: min(760px, calc(100vw - 28px));
+    border: 0;
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: 0 24px 80px rgba(0,0,0,.28);
+  }
+  dialog::backdrop { background: rgba(13, 25, 18, .55); }
+  .modal-head { padding: 18px 20px; border-bottom: 1px solid var(--line); }
+  .modal-head h2 { margin: 0; }
+  .modal-body { padding: 20px; }
+  .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .form-grid .full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 800; color: #4b5750; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .03em; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 18px; }
+  .footer-note { color: var(--muted); font-size: 12px; margin-top: 12px; }
+  @media (max-width: 900px) {
+    .toolbar { grid-template-columns: 1fr 1fr; }
+    .toolbar input { grid-column: 1 / -1; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid .full { grid-column: auto; }
+  }
+
+  .brand-cell { white-space: nowrap; }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: #f7faf8;
+    border: 1px solid var(--line);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .brand-mark {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.02em;
+    flex: 0 0 22px;
+  }
+  .brand-ping { background: #f97316; }
+  .brand-callaway { background: #111827; }
+  .brand-srixon { background: #1d4ed8; }
+  .brand-taylormade { background: #6d28d9; }
+  .brand-cleveland { background: #7c2d12; }
+  .brand-scotty-cameron { background: #be123c; }
+  .brand-default { background: #475569; }
+
+  .club-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+  }
+  .club-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(24,33,28,0.08);
+    font-size: 13px;
+    flex: 0 0 24px;
+  }
+
+
+  .grip-cell { min-width: 260px; }
+  .grip-display {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    line-height: 1.25;
+  }
+  .grip-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: #f8fbf9;
+    white-space: nowrap;
+  }
+  .grip-pill.model { font-weight: 700; }
+  .grip-pill.color { background: #fff7f7; }
+  .grip-pill.size { background: #f6f8ff; }
+  .grip-icon-small { font-size: 12px; }
+
+
+  .flex-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-weight: 800;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .flex-stiff {
+    color: #991b1b;
+    background: #fee2e2;
+    border-color: #fecaca;
+  }
+  .flex-xstiff {
+    color: #166534;
+    background: #dcfce7;
+    border-color: #bbf7d0;
+  }
+  .flex-other {
+    color: #475569;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>Golf Club Inventory</h1>
+    <p>Track every club, its setup, and where it currently lives.</p>
+  </div>
+</header>
+<main>
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="Search club, model, shaft, grip, notes…" />
+    <button class="primary" id="addBtn">+ Add Club</button>
+    <button class="secondary" id="exportBtn">Export CSV</button>
+    <button class="secondary" id="resetBtn">Reset Data</button>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><strong id="totalCount">0</strong><span>Total clubs</span></div>
+    <div class="stat"><strong id="bag1Count">0</strong><span>Bag 1</span></div>
+    <div class="stat"><strong id="bag2Count">0</strong><span>Bag 2</span></div>
+    <div class="stat"><strong id="spareCount">0</strong><span>Spare clubs</span></div>
+  </section>
+
+  <nav class="tabs" aria-label="Inventory filters">
+    <button class="tab active" data-location="All">All Clubs</button>
+    <button class="tab" data-location="Bag 1">Bag 1</button>
+    <button class="tab" data-location="Bag 2">Bag 2</button>
+    <button class="tab" data-location="Spare Clubs">Spare Clubs</button>
+  </nav>
+
+  <div class="legend" aria-label="Club category colors">
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--wood-bg)"></span>Fairway Woods</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--iron-bg)"></span>Irons / Hybrids</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--wedge-bg)"></span>Wedges</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--putter-bg)"></span>Putter</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Location</th><th>Club</th><th>Brand</th><th>Model</th><th>Loft</th><th>Shaft</th><th>Flex</th><th>Grip</th><th>Notes</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryBody"></tbody>
+    </table>
+    <div id="emptyState" class="empty" hidden>No clubs match this view.</div>
+  </div>
+  <div class="footer-note">Changes are saved automatically in this browser using local storage.</div>
+</main>
+
+<dialog id="clubDialog">
+  <form method="dialog" id="clubForm">
+    <div class="modal-head"><h2 id="dialogTitle">Add Club</h2></div>
+    <div class="modal-body">
+      <input type="hidden" id="clubId" />
+      <div class="form-grid">
+        <div><label for="location">Location</label><select id="location" required><option>Bag 1</option><option>Bag 2</option><option>Spare Clubs</option></select></div>
+        <div><label for="clubType">Club</label><input id="clubType" required placeholder="Driver, 5-Wood, 7-Iron…" /></div>
+        <div><label for="brand">Brand</label><input id="brand" placeholder="Ping" /></div>
+        <div><label for="model">Model</label><input id="model" placeholder="G440 LST" /></div>
+        <div><label for="loft">Loft</label><input id="loft" placeholder="7.5°" /></div>
+        <div><label for="flex">Flex</label><input id="flex" placeholder="X, Stiff, S400…" /></div>
+        <div class="full"><label for="shaft">Shaft</label><input id="shaft" placeholder="Mitsubishi Diamana Blue Board 63X" /></div>
+        <div class="full"><label for="grip">Grip</label><input id="grip" placeholder="Golf Pride CP2 Pro - Red Cap - Standard" /></div>
+        <div class="full"><label for="notes">Notes</label><textarea id="notes" rows="3" placeholder="Finish, special edition, standard length, etc."></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="cancelBtn">Cancel</button>
+        <button type="submit" class="primary">Save Club</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const STARTER_DATA = [
+  {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 1',club:'3-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'15°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 1',club:'5-Wood',brand:'Ping',model:'G440 Max',loft:'19°',shaft:'Fujikura Ventus 8 Velocore',flex:'X',grip:'Golf Pride Tour Velvet - Standard',notes:'Grip model recorded as likely Tour Velvet.'},
+  {location:'Bag 1',club:'7-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'21°',shaft:'Graphite Design Tour AD VF-8',flex:'X',grip:'Golf Pride New Decade MultiCompound - Green/Black - Standard',notes:''},
+  {location:'Bag 1',club:'5-Hybrid',brand:'Srixon',model:'ZXi',loft:'25°',shaft:'Project X EvenFlow Riptide Hybrid 80',flex:'6.5 / X',grip:'Golf Pride CP2 Wrap - Blue Cap - Standard',notes:''},
+  ...[
+    ['6-Iron','28°'],['7-Iron','32°'],['8-Iron','36°'],['9-Iron','41°'],['Pitching Wedge','46°'],['Gap Wedge','51°']
+  ].map(([club,loft])=>({location:'Bag 1',club,brand:'Srixon',model:'ZXi7',loft,shaft:'Mitsubishi MMT 125 graphite',flex:'Stiff',grip:'Golf Pride CP2 Wrap - Blue Cap - Standard',notes:'Standard loft and length.'})),
+  {location:'Bag 1',club:'Wedge',brand:'Cleveland',model:'RTZ Mid-10, SWAG King & Queen',loft:'54°',shaft:'Dynamic Gold SWAG Issue S400',flex:'S400',grip:'Golf Pride MCC Plus - Gold/Black - Standard',notes:'Special SWAG King & Queen edition.'},
+  {location:'Bag 1',club:'Wedge',brand:'Cleveland',model:'RTZ Full Face ADAPT 8',loft:'58°',shaft:'Dynamic Gold Spinner Wedge Tour Issue',flex:'Wedge flex',grip:'Golf Pride Tour Velvet 360 - Standard',notes:'Shaft weight not marked.'},
+  {location:'Bag 1',club:'Putter',brand:'Scotty Cameron',model:'Phantom 5.2',loft:'',shaft:'Scotty Cameron',flex:'',grip:'Scotty Cameron Design Thin Pistol',notes:''},
+
+  {location:'Bag 2',club:'Driver',brand:'Ping',model:'G430 LST',loft:'9°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 2',club:'3-Wood',brand:'Ping',model:'G440 LST',loft:'15°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 2',club:'5-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'18°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 2',club:'7-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'21°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 2',club:'2-Hybrid',brand:'TaylorMade',model:'Qi4D',loft:'17°',shaft:'Project X EvenFlow Riptide Hybrid 80',flex:'6.5 / X',grip:'Golf Pride Z-Grip - Standard',notes:''},
+  ...[
+    ['5-Iron','25°'],['6-Iron','28°'],['7-Iron','32°'],['8-Iron','36°'],['9-Iron','41°'],['Pitching Wedge','46°'],['Gap Wedge','51°']
+  ].map(([club,loft])=>({location:'Bag 2',club,brand:'Srixon',model:'ZXi7',loft,shaft:'Mitsubishi MMT 125 graphite',flex:'Stiff',grip:'Golf Pride CP2 Wrap - Blue Cap - Midsize',notes:'Standard loft and length.'})),
+  {location:'Bag 2',club:'Wedge',brand:'Cleveland',model:'RTZ Tour Rack Mid-10',loft:'54°',shaft:'Dynamic Gold Tour Issue S400 steel',flex:'S400',grip:'Golf Pride Tour Velvet 360 - Standard',notes:''},
+  {location:'Bag 2',club:'Wedge',brand:'Cleveland',model:'RTZ Tour Rack Full Face ADAPT 8',loft:'58°',shaft:'Dynamic Gold Tour Issue S400 steel',flex:'S400',grip:'Golf Pride CP2 Wrap - Blue Cap - Standard',notes:''},
+  {location:'Bag 2',club:'Putter',brand:'Scotty Cameron',model:'Phantom 5.2',loft:'',shaft:'Scotty Cameron',flex:'',grip:'Scotty Cameron Design Thin Pistol',notes:''},
+
+  {location:'Spare Clubs',club:'2-Hybrid',brand:'TaylorMade',model:'Qi35',loft:'17°',shaft:'Mitsubishi Kai’li HY 95',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Moved from Bag 2.'},
+  {location:'Spare Clubs',club:'Wedge',brand:'Cleveland',model:'RTZ Black Satin Mid-10',loft:'54°',shaft:'Dynamic Gold Tour Issue S400',flex:'S400',grip:'Golf Pride CP2 Wrap - Blue Cap - Standard',notes:'Black Satin finish.'},
+  {location:'Spare Clubs',club:'Driving Iron / 3-Iron',brand:'Ping',model:'iDi',loft:'17°',shaft:'Graphite Design Tour AD DI-105 Hybrid',flex:'X',grip:'Golf Pride Tour Velvet Plus4 - Midsize',notes:''},
+  {location:'Spare Clubs',club:'3-Hybrid',brand:'TaylorMade',model:'Qi35',loft:'19°',shaft:'Mitsubishi Tensei 1K Black 95 Hybrid',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Spare Clubs',club:'4-Hybrid',brand:'Callaway',model:'Quantum Max',loft:'21°',shaft:'Mitsubishi MMT Hybrid 80',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''}
+].map((item, i) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+i), ...item }));
+
+const STORAGE_KEY = 'golfClubInventoryV1';
+let clubs = loadData();
+let activeLocation = 'All';
+
+function normalizeGrip(club) {
+  if (!club) return club;
+  let grip = (club.grip || '').trim();
+  const size = (club.gripSize || '').trim();
+  const color = (club.gripColor || '').trim();
+
+  if (/^red-cap grip$/i.test(grip) || /red cap/i.test(color)) {
+    grip = `Golf Pride CP2 Pro - Red Cap - ${size || 'Standard'}`;
+  } else if (/^blue-cap grip$/i.test(grip) || /blue cap/i.test(color)) {
+    grip = `Golf Pride CP2 Wrap - Blue Cap - ${size || 'Standard'}`;
+  } else if (grip && (size || color) && !grip.includes(' - ')) {
+    grip = [grip, color, size].filter(Boolean).join(' - ');
+  }
+
+  const { gripSize, gripColor, ...rest } = club;
+  return { ...rest, grip };
+}
+
+function loadData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return structuredClone(STARTER_DATA);
+  try {
+    const parsed = JSON.parse(saved).map(normalizeGrip);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    return parsed;
+  } catch {
+    return structuredClone(STARTER_DATA);
+  }
+}
+function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(clubs)); }
+function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
+const body = document.getElementById('inventoryBody');
+const search = document.getElementById('search');
+const emptyState = document.getElementById('emptyState');
+
+function filteredClubs() {
+  const q = search.value.trim().toLowerCase();
+  return clubs.filter(c => {
+    const locationOk = activeLocation === 'All' || c.location === activeLocation;
+    const haystack = Object.values(c).join(' ').toLowerCase();
+    return locationOk && (!q || haystack.includes(q));
+  });
+}
+
+function clubCategory(club='') {
+  const name = club.toLowerCase();
+  if (name.includes('putter')) return 'putter';
+  if (name === 'driver' || name.includes('driver')) return 'driver';
+  if (name.includes('wood')) return 'wood';
+  if (name.includes('wedge')) return 'wedge';
+  return 'iron';
+}
+
+function locationNumberMap() {
+  const counters = {};
+  const map = {};
+  clubs.forEach(c => {
+    counters[c.location] = (counters[c.location] || 0) + 1;
+    map[c.id] = counters[c.location];
+  });
+  return map;
+}
+
+function brandClass(brand='') {
+  const key = brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return key || 'default';
+}
+
+function brandMarkText(brand='') {
+  const normalized = brand.toLowerCase();
+  if (normalized === 'taylormade') return 'TM';
+  if (normalized === 'scotty cameron') return 'SC';
+  if (normalized === 'callaway') return 'CA';
+  if (normalized === 'cleveland') return 'CG';
+  if (normalized === 'srixon') return 'SX';
+  if (normalized === 'ping') return 'P';
+  return brand.split(/\s+/).map(w => w[0] || '').join('').slice(0,2).toUpperCase() || '?';
+}
+
+function brandBadge(brand='') {
+  if (!brand) return '';
+  const cls = `brand-${brandClass(brand)}`;
+  return `<span class="brand-badge"><span class="brand-mark ${cls}">${esc(brandMarkText(brand))}</span><span>${esc(brand)}</span></span>`;
+}
+
+function gripDisplay(grip='') {
+  if (!grip) return '';
+  const parts = grip.split(/\s+-\s+/).filter(Boolean);
+  if (parts.length < 2) return esc(grip);
+  const [model, color, size, ...rest] = parts;
+  const extra = rest.length ? ` <span class="grip-pill"><span class="grip-icon-small">➕</span><span>${esc(rest.join(' • '))}</span></span>` : '';
+  return `<span class="grip-display">`
+    + `<span class="grip-pill model"><span class="grip-icon-small">🧤</span><span>${esc(model)}</span></span>`
+    + `<span class="grip-pill color"><span class="grip-icon-small">🎨</span><span>${esc(color)}</span></span>`
+    + `<span class="grip-pill size"><span class="grip-icon-small">📏</span><span>${esc(size)}</span></span>`
+    + extra
+    + `</span>`;
+}
+
+function flexDisplay(flex='') {
+  if (!flex) return '';
+  const value = flex.trim();
+  const normalized = value.toLowerCase();
+  let cls = 'flex-other';
+  if (normalized.includes('6.5') || normalized === 'x' || normalized.includes('x-stiff') || normalized.includes('xstiff')) {
+    cls = 'flex-xstiff';
+  } else if (normalized.includes('stiff') || normalized.includes('s400') || normalized === 's') {
+    cls = 'flex-stiff';
+  }
+  return `<span class="flex-badge ${cls}">${esc(value)}</span>`;
+}
+
+function clubIcon(club='') {
+  const category = clubCategory(club);
+  if (category === 'driver') return '🏌️';
+  if (category === 'wood') return '🌲';
+  if (category === 'wedge') return '⛳';
+  if (category === 'putter') return '🎯';
+  return '🔩';
+}
+
+function render() {
+  const data = filteredClubs();
+  const numberMap = locationNumberMap();
+  body.innerHTML = data.map(c => `
+    <tr class="category-${clubCategory(c.club)}">
+      <td class="club-number">${numberMap[c.id]}</td>
+      <td><span class="chip">${esc(c.location)}</span></td>
+      <td class="club-name"><span class="club-cell"><span class="club-icon">${clubIcon(c.club)}</span><span>${esc(c.club)}</span></span></td>
+      <td class="brand-cell">${brandBadge(c.brand)}</td>
+      <td>${esc(c.model)}</td>
+      <td>${esc(c.loft)}</td>
+      <td>${esc(c.shaft)}</td>
+      <td>${flexDisplay(c.flex)}</td>
+      <td class="grip-cell">${gripDisplay(c.grip)}</td>
+      <td>${esc(c.notes)}</td>
+      <td><div class="actions"><button class="secondary" onclick="editClub('${c.id}')">Edit</button><button class="danger" onclick="deleteClub('${c.id}')">Delete</button></div></td>
+    </tr>`).join('');
+  emptyState.hidden = data.length !== 0;
+  document.querySelector('table').style.display = data.length ? 'table' : 'none';
+  const bag1 = clubs.filter(c=>c.location==='Bag 1').length;
+  const bag2 = clubs.filter(c=>c.location==='Bag 2').length;
+  const spares = clubs.filter(c=>c.location==='Spare Clubs').length;
+  document.getElementById('totalCount').textContent = clubs.length;
+  document.getElementById('bag1Count').textContent = bag1 > 14 ? `${bag1} ⚠` : bag1;
+  document.getElementById('bag2Count').textContent = bag2 > 14 ? `${bag2} ⚠` : bag2;
+  document.getElementById('spareCount').textContent = spares;
+  document.getElementById('bag1Count').closest('.stat').classList.toggle('over-limit', bag1 > 14);
+  document.getElementById('bag2Count').closest('.stat').classList.toggle('over-limit', bag2 > 14);
+}
+
+const dialog = document.getElementById('clubDialog');
+const form = document.getElementById('clubForm');
+const fields = ['clubId','location','clubType','brand','model','loft','shaft','flex','grip','notes'];
+
+function openForm(club=null) {
+  document.getElementById('dialogTitle').textContent = club ? 'Edit Club' : 'Add Club';
+  const values = club ? {
+    clubId:club.id, location:club.location, clubType:club.club, brand:club.brand, model:club.model, loft:club.loft,
+    shaft:club.shaft, flex:club.flex, grip:club.grip, notes:club.notes
+  } : {clubId:'',location:'Bag 1',clubType:'',brand:'',model:'',loft:'',shaft:'',flex:'',grip:'',notes:''};
+  fields.forEach(id => document.getElementById(id).value = values[id] || '');
+  dialog.showModal();
+}
+
+window.editClub = id => openForm(clubs.find(c=>c.id===id));
+window.deleteClub = id => {
+  const c = clubs.find(x=>x.id===id);
+  if (confirm(`Delete ${c?.brand || ''} ${c?.model || c?.club || 'club'}?`)) {
+    clubs = clubs.filter(x=>x.id!==id); saveData(); render();
+  }
+};
+
+document.getElementById('addBtn').addEventListener('click', ()=>openForm());
+document.getElementById('cancelBtn').addEventListener('click', ()=>dialog.close());
+search.addEventListener('input', render);
+
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); activeLocation = btn.dataset.location; render();
+}));
+
+form.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('clubId').value;
+  const item = {
+    id: id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    location: document.getElementById('location').value,
+    club: document.getElementById('clubType').value.trim(),
+    brand: document.getElementById('brand').value.trim(),
+    model: document.getElementById('model').value.trim(),
+    loft: document.getElementById('loft').value.trim(),
+    shaft: document.getElementById('shaft').value.trim(),
+    flex: document.getElementById('flex').value.trim(),
+    grip: document.getElementById('grip').value.trim(),
+    notes: document.getElementById('notes').value.trim()
+  };
+  if (id) clubs = clubs.map(c => c.id===id ? item : c); else clubs.push(item);
+  saveData(); dialog.close(); render();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (confirm('Reset the inventory to the original starter data? This will erase your browser edits.')) {
+    clubs = structuredClone(STARTER_DATA); saveData(); render();
+  }
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const headers = ['Number','Location','Club','Brand','Model','Loft','Shaft','Flex','Grip','Notes'];
+  const exportNumbers = locationNumberMap();
+  const rows = clubs.map(c => [exportNumbers[c.id],c.location,c.club,c.brand,c.model,c.loft,c.shaft,c.flex,c.grip,c.notes]);
+  const csv = [headers,...rows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
+});
+
+render();
+</script>
+</body>
+</html>
