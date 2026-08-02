@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.6
-  Release date: August 1, 2026 at 11:38 PM EDT
-  Release timestamp: 2026-08-01T23:38:00-04:00
+  Version: v1.1.8
+  Release date: August 1, 2026 at 11:48 PM EDT
+  Release timestamp: 2026-08-01T23:48:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.6" />
-<meta name="release-date" content="2026-08-01T23:38:00-04:00" />
+<meta name="application-version" content="1.1.8" />
+<meta name="release-date" content="2026-08-01T23:48:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -146,6 +146,26 @@
   .chip-bag1 { background: var(--loc-bag1-bg); color: var(--loc-bag1-ink); }
   .chip-bag2 { background: var(--loc-bag2-bg); color: var(--loc-bag2-ink); }
   .chip-spare { background: var(--loc-spare-bg); color: var(--loc-spare-ink); }
+
+  .sort-header {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 800;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    padding: 0;
+    min-height: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+  .sort-header:hover, .sort-header:focus-visible { color: var(--accent); }
+  .sort-header span { font-size: 13px; }
+
   .actions { display: flex; gap: 6px; }
   .actions button { padding: 7px 9px; font-size: 12px; }
   .empty { padding: 44px; text-align: center; color: var(--muted); }
@@ -370,7 +390,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.4 • August 1, 2026 at 11:38 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.8 • August 1, 2026 at 11:48 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -404,7 +424,7 @@
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Location</th><th>Club</th><th>Brand</th><th>Model</th><th>Loft</th><th>Shaft</th><th>Flex</th><th>Grip</th><th>Notes</th><th>Actions</th>
+          <th>#</th><th>Location</th><th>Club</th><th>Brand</th><th>Model</th><th><button type="button" class="sort-header" id="loftSortBtn" aria-label="Sort by loft" aria-pressed="false">Loft <span id="loftSortIcon" aria-hidden="true">↕</span></button></th><th>Shaft</th><th>Flex</th><th>Grip</th><th>Notes</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="inventoryBody"></tbody>
@@ -413,7 +433,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.4 • August 1, 2026 at 11:38 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.8 • August 1, 2026 at 11:48 PM EDT</span>
   </div>
 </main>
 
@@ -460,8 +480,8 @@
 
 <script>
 const APP_VERSION = '1.1.5';
-const RELEASED_AT = '2026-08-01T23:38:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:38 PM EDT';
+const RELEASED_AT = '2026-08-01T23:48:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:48 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -494,12 +514,14 @@ const STARTER_DATA = [
   {location:'Spare Clubs',club:'3-Hybrid',brand:'TaylorMade',model:'Qi35',loft:'19°',shaft:'Mitsubishi Tensei 1K Black 95 Hybrid',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Spare Clubs',club:'4-Hybrid',brand:'Callaway',model:'Quantum Max',loft:'21°',shaft:'Mitsubishi MMT Hybrid 80',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Spare Clubs',club:'Driver',brand:'Callaway',model:'2026 Quantum Mini',loft:'13.5°',shaft:'Mitsubishi Tensei AV Blue 75 Graphite',flex:'X-Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'},
-  {location:'Spare Clubs',club:'9-Wood',brand:'Callaway',model:'2026 Quantum Max',loft:'24°',shaft:'Mitsubishi Tensei 1K Black 85 Graphite',flex:'Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'}
+  {location:'Spare Clubs',club:'9-Wood',brand:'Callaway',model:'2026 Quantum Max',loft:'24°',shaft:'Mitsubishi Tensei 1K Black 85 Graphite',flex:'Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'},
+  {location:'Spare Clubs',club:'Putter',brand:'Scotty Cameron',model:'Phantom 5.2',loft:'',shaft:'Scotty Cameron',flex:'',grip:'Scotty Cameron Design Thin Pistol',notes:''}
 ].map((item, i) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+i), ...item }));
 
 const STORAGE_KEY = 'golfClubInventoryV1';
 let clubs = loadData();
 let activeLocation = 'All';
+let loftSortDirection = null;
 
 function normalizeGrip(club) {
   if (!club) return club;
@@ -559,9 +581,12 @@ function loadData() {
 
     const releaseAdditions = STARTER_DATA.filter(item =>
       item.location === 'Spare Clubs' &&
-      item.brand === 'Callaway' &&
-      ((item.model === '2026 Quantum Mini' && item.loft === '13.5°') ||
-       (item.model === '2026 Quantum Max' && item.club === '9-Wood' && item.loft === '24°'))
+      (
+        (item.brand === 'Callaway' &&
+          ((item.model === '2026 Quantum Mini' && item.loft === '13.5°') ||
+           (item.model === '2026 Quantum Max' && item.club === '9-Wood' && item.loft === '24°'))) ||
+        (item.brand === 'Scotty Cameron' && item.model === 'Phantom 5.2' && item.club === 'Putter')
+      )
     );
 
     releaseAdditions.forEach(item => {
@@ -591,6 +616,8 @@ function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<'
 const body = document.getElementById('inventoryBody');
 const search = document.getElementById('search');
 const emptyState = document.getElementById('emptyState');
+const loftSortBtn = document.getElementById('loftSortBtn');
+const loftSortIcon = document.getElementById('loftSortIcon');
 
 function clubSortRank(item) {
   const club = (item.club || '').toLowerCase();
@@ -623,6 +650,22 @@ function allClubsComparator(a, b) {
   return (a.model || '').localeCompare(b.model || '');
 }
 
+function loftValue(loft='') {
+  const match = String(loft).match(/-?\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : null;
+}
+
+function loftComparator(a, b) {
+  const aLoft = loftValue(a.loft);
+  const bLoft = loftValue(b.loft);
+  if (aLoft === null && bLoft === null) return allClubsComparator(a, b);
+  if (aLoft === null) return 1;
+  if (bLoft === null) return -1;
+  const difference = aLoft - bLoft;
+  if (difference !== 0) return loftSortDirection === 'desc' ? -difference : difference;
+  return allClubsComparator(a, b);
+}
+
 function filteredClubs() {
   const q = search.value.trim().toLowerCase();
   const filtered = clubs.filter(c => {
@@ -631,6 +674,7 @@ function filteredClubs() {
     return locationOk && (!q || haystack.includes(q));
   });
 
+  if (loftSortDirection) return filtered.sort(loftComparator);
   return activeLocation === 'All' ? filtered.sort(allClubsComparator) : filtered;
 }
 
@@ -773,6 +817,9 @@ function clubIcon(club='') {
 
 function render() {
   const data = filteredClubs();
+  loftSortBtn.setAttribute('aria-pressed', loftSortDirection ? 'true' : 'false');
+  loftSortIcon.textContent = loftSortDirection === 'asc' ? '↑' : loftSortDirection === 'desc' ? '↓' : '↕';
+  loftSortBtn.title = loftSortDirection === 'asc' ? 'Loft: low to high' : loftSortDirection === 'desc' ? 'Loft: high to low' : 'Sort by loft';
   const numberMap = locationNumberMap();
   body.innerHTML = data.map(c => `
     <tr class="category-${clubCategory(c.club)}">
@@ -1041,6 +1088,10 @@ document.getElementById('closeSpeechBtn').addEventListener('click', ()=>{ if (sp
 document.getElementById('parseSpeechBtn').addEventListener('click', parseSpeechInput);
 document.getElementById('cancelBtn').addEventListener('click', ()=>dialog.close());
 search.addEventListener('input', render);
+loftSortBtn.addEventListener('click', () => {
+  loftSortDirection = loftSortDirection === 'asc' ? 'desc' : 'asc';
+  render();
+});
 
 document.querySelectorAll('.stat[data-location]').forEach(card => card.addEventListener('click', () => {
   document.querySelectorAll('.stat[data-location]').forEach(item => {
