@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.9
-  Release date: August 1, 2026 at 11:51 PM EDT
-  Release timestamp: 2026-08-01T23:51:00-04:00
+  Version: v1.1.10
+  Release date: August 1, 2026 at 11:55 PM EDT
+  Release timestamp: 2026-08-01T23:55:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.9" />
-<meta name="release-date" content="2026-08-01T23:51:00-04:00" />
+<meta name="application-version" content="1.1.10" />
+<meta name="release-date" content="2026-08-01T23:55:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -479,9 +479,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.9';
-const RELEASED_AT = '2026-08-01T23:48:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:51 PM EDT';
+const APP_VERSION = '1.1.10';
+const RELEASED_AT = '2026-08-01T23:55:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:55 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -515,6 +515,7 @@ const STARTER_DATA = [
   {location:'Spare Clubs',club:'4-Hybrid',brand:'Callaway',model:'Quantum Max',loft:'21°',shaft:'Mitsubishi MMT Hybrid 80',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Spare Clubs',club:'Driver',brand:'Callaway',model:'2026 Quantum Mini',loft:'13.5°',shaft:'Mitsubishi Tensei AV Blue 75 Graphite',flex:'X-Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'},
   {location:'Spare Clubs',club:'9-Wood',brand:'Callaway',model:'2026 Quantum Max',loft:'24°',shaft:'Mitsubishi Tensei 1K Black 85 Graphite',flex:'Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'},
+  {location:'Spare Clubs',club:'Driver',brand:'Titleist',model:'GT280 Mini Driver',loft:'13°',shaft:'Mitsubishi Tensei 1K Blue 75',flex:'TX / X-Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; shaft logo down.'},
   {location:'Spare Clubs',club:'Putter',brand:'Scotty Cameron',model:'Phantom 5.2',loft:'',shaft:'Scotty Cameron',flex:'',grip:'Scotty Cameron Design Thin Pistol',notes:''}
 ].map((item, i) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+i), ...item }));
 
@@ -585,7 +586,8 @@ function loadData() {
         (item.brand === 'Callaway' &&
           ((item.model === '2026 Quantum Mini' && item.loft === '13.5°') ||
            (item.model === '2026 Quantum Max' && item.club === '9-Wood' && item.loft === '24°'))) ||
-        (item.brand === 'Scotty Cameron' && item.model === 'Phantom 5.2' && item.club === 'Putter')
+        (item.brand === 'Scotty Cameron' && item.model === 'Phantom 5.2' && item.club === 'Putter') ||
+        (item.brand === 'Titleist' && item.model === 'GT280 Mini Driver' && item.loft === '13°')
       )
     );
 
