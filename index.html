@@ -1,14 +1,15 @@
 <!--
   Golf Club Inventory
-  Release: v1.1.0
-  Released: August 1, 2026 at 11:20 PM EDT
+  Version: v1.1.1
+  Release date: August 1, 2026 at 11:23 PM EDT
+  Release timestamp: 2026-08-01T23:23:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.0" />
-<meta name="release-date" content="2026-08-01T23:20:00-04:00" />
+<meta name="application-version" content="1.1.1" />
+<meta name="release-date" content="2026-08-01T23:23:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -352,7 +353,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge"></span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.1 • August 1, 2026 at 11:23 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -402,7 +403,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter"></span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.1 • August 1, 2026 at 11:23 PM EDT</span>
   </div>
 </main>
 
@@ -448,9 +449,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.0';
-const RELEASED_AT = '2026-08-01T21:45:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:20 PM EDT';
+const APP_VERSION = '1.1.1';
+const RELEASED_AT = '2026-08-01T23:23:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:23 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -1007,8 +1008,8 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
 });
 
-document.getElementById('releaseBadge').textContent = `v${APP_VERSION} • ${RELEASED_DISPLAY}`;
-document.getElementById('releaseFooter').textContent = `Release v${APP_VERSION} • ${RELEASED_DISPLAY}`;
+document.getElementById('releaseBadge').textContent = `Version ${APP_VERSION} • ${RELEASED_DISPLAY}`;
+document.getElementById('releaseFooter').textContent = `Version ${APP_VERSION} • ${RELEASED_DISPLAY}`;
 
 render();
 </script>
