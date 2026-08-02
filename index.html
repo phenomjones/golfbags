@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.5
-  Release date: August 1, 2026 at 11:31 PM EDT
-  Release timestamp: 2026-08-01T23:31:00-04:00
+  Version: v1.1.6
+  Release date: August 1, 2026 at 11:38 PM EDT
+  Release timestamp: 2026-08-01T23:38:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.5" />
-<meta name="release-date" content="2026-08-01T23:31:00-04:00" />
+<meta name="application-version" content="1.1.6" />
+<meta name="release-date" content="2026-08-01T23:38:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -370,7 +370,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.4 • August 1, 2026 at 11:31 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.4 • August 1, 2026 at 11:38 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -413,7 +413,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.4 • August 1, 2026 at 11:31 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.4 • August 1, 2026 at 11:38 PM EDT</span>
   </div>
 </main>
 
@@ -460,8 +460,8 @@
 
 <script>
 const APP_VERSION = '1.1.5';
-const RELEASED_AT = '2026-08-01T23:31:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:31 PM EDT';
+const RELEASED_AT = '2026-08-01T23:38:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:38 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -523,27 +523,39 @@ function cloneStarterData() {
   return STARTER_DATA.map(item => ({ ...item }));
 }
 
+function safeStorageGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch (error) {
+    console.warn('Browser storage is unavailable; using the built-in inventory for this session.', error);
+    return null;
+  }
+}
+
+function safeStorageSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn('Browser storage is unavailable; changes will last only for this session.', error);
+    return false;
+  }
+}
+
 function loadData() {
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = safeStorageGet(STORAGE_KEY);
   if (!saved) return cloneStarterData();
 
   try {
     const raw = JSON.parse(saved);
-
-    // Self-repair: an empty, null, or malformed saved value must never erase
-    // the built-in inventory shown by the app.
     if (!Array.isArray(raw) || raw.length === 0) {
       const restored = cloneStarterData();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
+      safeStorageSet(STORAGE_KEY, JSON.stringify(restored));
       return restored;
     }
 
     const parsed = raw.filter(item => item && typeof item === 'object').map(normalizeGrip);
-    if (parsed.length === 0) {
-      const restored = cloneStarterData();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
-      return restored;
-    }
+    if (parsed.length === 0) return cloneStarterData();
 
     const releaseAdditions = STARTER_DATA.filter(item =>
       item.location === 'Spare Clubs' &&
@@ -563,16 +575,17 @@ function loadData() {
       if (!exists) parsed.push({ ...item });
     });
 
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    safeStorageSet(STORAGE_KEY, JSON.stringify(parsed));
     return parsed;
   } catch (error) {
     console.warn('Inventory data could not be read; restoring starter inventory.', error);
-    const restored = cloneStarterData();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(restored));
-    return restored;
+    return cloneStarterData();
   }
 }
-function saveData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(clubs)); }
+
+function saveData() {
+  return safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
+}
 function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 const body = document.getElementById('inventoryBody');
@@ -639,6 +652,13 @@ function locationNumberMap() {
     map[c.id] = counters[c.location];
   });
   return map;
+}
+
+function locationChipClass(location='') {
+  if (location === 'Bag 1') return 'chip-bag1';
+  if (location === 'Bag 2') return 'chip-bag2';
+  if (location === 'Spare Clubs') return 'chip-spare';
+  return '';
 }
 
 function brandLogo(brand='') {
