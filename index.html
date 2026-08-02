@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.1
-  Release date: August 1, 2026 at 11:23 PM EDT
-  Release timestamp: 2026-08-01T23:23:00-04:00
+  Version: v1.1.3
+  Release date: August 1, 2026 at 11:26 PM EDT
+  Release timestamp: 2026-08-01T23:26:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.1" />
-<meta name="release-date" content="2026-08-01T23:23:00-04:00" />
+<meta name="application-version" content="1.1.3" />
+<meta name="release-date" content="2026-08-01T23:26:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -30,6 +30,12 @@
     --hybrid-bg: #e9f7f5;
     --wedge-bg: #f4eaff;
     --putter-bg: #ffe9ee;
+    --loc-bag1-bg: #dff3e8;
+    --loc-bag1-ink: #0f5134;
+    --loc-bag2-bg: #dcecff;
+    --loc-bag2-ink: #184c8c;
+    --loc-spare-bg: #f5e0ff;
+    --loc-spare-ink: #6b21a8;
   }
   * { box-sizing: border-box; }
   body {
@@ -128,7 +134,10 @@
   .legend-item { display: inline-flex; align-items: center; gap: 6px; }
   .legend-swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,.08); border-radius: 4px; }
   .club-name { font-weight: 800; }
-  .chip { display: inline-block; padding: 4px 8px; border-radius: 999px; background: var(--chip); color: var(--accent-2); font-size: 12px; font-weight: 700; }
+  .chip { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--chip); color: var(--accent-2); font-size: 12px; font-weight: 700; }
+  .chip-bag1 { background: var(--loc-bag1-bg); color: var(--loc-bag1-ink); }
+  .chip-bag2 { background: var(--loc-bag2-bg); color: var(--loc-bag2-ink); }
+  .chip-spare { background: var(--loc-spare-bg); color: var(--loc-spare-ink); }
   .actions { display: flex; gap: 6px; }
   .actions button { padding: 7px 9px; font-size: 12px; }
   .empty { padding: 44px; text-align: center; color: var(--muted); }
@@ -353,7 +362,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.1 • August 1, 2026 at 11:23 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.3 • August 1, 2026 at 11:26 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -403,7 +412,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.1 • August 1, 2026 at 11:23 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.3 • August 1, 2026 at 11:26 PM EDT</span>
   </div>
 </main>
 
@@ -449,9 +458,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.1';
-const RELEASED_AT = '2026-08-01T23:23:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:23 PM EDT';
+const APP_VERSION = '1.1.3';
+const RELEASED_AT = '2026-08-01T23:26:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:26 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -482,7 +491,9 @@ const STARTER_DATA = [
   {location:'Spare Clubs',club:'Wedge',brand:'Cleveland',model:'RTZ Black Satin Mid-10',loft:'54°',shaft:'Dynamic Gold Tour Issue S400',flex:'S400',grip:'Golf Pride CP2 Wrap - Blue Cap - Standard',notes:'Black Satin finish.'},
   {location:'Spare Clubs',club:'Driving Iron / 3-Iron',brand:'Ping',model:'iDi',loft:'17°',shaft:'Graphite Design Tour AD DI-105 Hybrid',flex:'X',grip:'Golf Pride Tour Velvet Plus4 - Midsize',notes:''},
   {location:'Spare Clubs',club:'3-Hybrid',brand:'TaylorMade',model:'Qi35',loft:'19°',shaft:'Mitsubishi Tensei 1K Black 95 Hybrid',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
-  {location:'Spare Clubs',club:'4-Hybrid',brand:'Callaway',model:'Quantum Max',loft:'21°',shaft:'Mitsubishi MMT Hybrid 80',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''}
+  {location:'Spare Clubs',club:'4-Hybrid',brand:'Callaway',model:'Quantum Max',loft:'21°',shaft:'Mitsubishi MMT Hybrid 80',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Spare Clubs',club:'Driver',brand:'Callaway',model:'2026 Quantum Mini',loft:'13.5°',shaft:'Mitsubishi Tensei AV Blue 75 Graphite',flex:'X-Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'},
+  {location:'Spare Clubs',club:'9-Wood',brand:'Callaway',model:'2026 Quantum Max',loft:'24°',shaft:'Mitsubishi Tensei 1K Black 85 Graphite',flex:'Stiff',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:'Right-handed; standard length; standard wraps.'}
 ].map((item, i) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+i), ...item }));
 
 const STORAGE_KEY = 'golfClubInventoryV1';
@@ -512,6 +523,22 @@ function loadData() {
   if (!saved) return structuredClone(STARTER_DATA);
   try {
     const parsed = JSON.parse(saved).map(normalizeGrip);
+    const releaseAdditions = STARTER_DATA.filter(item =>
+      item.location === 'Spare Clubs' &&
+      item.brand === 'Callaway' &&
+      ((item.model === '2026 Quantum Mini' && item.loft === '13.5°') ||
+       (item.model === '2026 Quantum Max' && item.club === '9-Wood' && item.loft === '24°'))
+    );
+    releaseAdditions.forEach(item => {
+      const exists = parsed.some(club =>
+        club.location === item.location &&
+        club.brand === item.brand &&
+        club.model === item.model &&
+        club.club === item.club &&
+        club.loft === item.loft
+      );
+      if (!exists) parsed.push(structuredClone(item));
+    });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
     return parsed;
   } catch {
@@ -703,7 +730,7 @@ function render() {
   body.innerHTML = data.map(c => `
     <tr class="category-${clubCategory(c.club)}">
       <td class="club-number">${numberMap[c.id]}</td>
-      <td><span class="chip">${esc(c.location)}</span></td>
+      <td><span class="chip ${locationChipClass(c.location)}">${esc(c.location)}</span></td>
       <td class="club-name"><span class="club-cell"><span class="club-icon">${clubIcon(c.club)}</span><span>${esc(c.club)}</span></span></td>
       <td class="brand-cell">${brandBadge(c.brand)}</td>
       <td>${esc(c.model)}</td>
