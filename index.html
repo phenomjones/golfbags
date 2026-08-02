@@ -1,7 +1,14 @@
+<!--
+  Golf Club Inventory
+  Release: v1.1.0
+  Released: August 1, 2026 at 11:20 PM EDT
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="application-version" content="1.1.0" />
+<meta name="release-date" content="2026-08-01T23:20:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -300,12 +307,53 @@
     50% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(168,50,50,0); }
   }
 
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    margin-bottom: 6px;
+  }
+  .title-row h1 { margin-bottom: 0; }
+  .release-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.25);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .release-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #a7f3d0;
+    box-shadow: 0 0 0 3px rgba(167,243,208,0.16);
+  }
+  .footer-note {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+  .release-footer { font-weight: 650; }
+
 </style>
 </head>
 <body>
 <header>
   <div class="header-inner">
-    <h1>Golf Club Inventory</h1>
+    <div class="title-row">
+      <h1>Golf Club Inventory</h1>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge"></span></span>
+    </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
 </header>
@@ -352,7 +400,10 @@
     </table>
     <div id="emptyState" class="empty" hidden>No clubs match this view.</div>
   </div>
-  <div class="footer-note">Changes are saved automatically in this browser using local storage.</div>
+  <div class="footer-note">
+    <span>Changes are saved automatically in this browser using local storage.</span>
+    <span class="release-footer" id="releaseFooter"></span>
+  </div>
 </main>
 
 <dialog id="clubDialog">
@@ -397,6 +448,10 @@
 </dialog>
 
 <script>
+const APP_VERSION = '1.1.0';
+const RELEASED_AT = '2026-08-01T21:45:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:20 PM EDT';
+
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 1',club:'3-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'15°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -469,13 +524,46 @@ const body = document.getElementById('inventoryBody');
 const search = document.getElementById('search');
 const emptyState = document.getElementById('emptyState');
 
+function clubSortRank(item) {
+  const club = (item.club || '').toLowerCase();
+  const loft = parseFloat(item.loft) || 0;
+  const clubNumberMatch = club.match(/(\d+(?:\.\d+)?)/);
+  const clubNumber = clubNumberMatch ? parseFloat(clubNumberMatch[1]) : 99;
+
+  if (club.includes('driver') && !club.includes('driving iron')) return 0;
+  if (club.includes('wood')) return 100 + clubNumber;
+  if (club.includes('hybrid')) return 200 + clubNumber;
+  if (club.includes('driving iron')) return 250 + clubNumber;
+  if (/pitching wedge|\bpw\b/.test(club)) return 390;
+  if (/gap wedge|approach wedge|\bgw\b|\baw\b/.test(club)) return 400;
+  if (club.includes('wedge')) return 500 + loft;
+  if (club.includes('iron')) return 300 + clubNumber;
+  if (club.includes('putter')) return 900;
+  return 800;
+}
+
+function allClubsComparator(a, b) {
+  const rankDifference = clubSortRank(a) - clubSortRank(b);
+  if (rankDifference) return rankDifference;
+
+  const locationOrder = {'Bag 1': 0, 'Bag 2': 1, 'Spare Clubs': 2};
+  const locationDifference = (locationOrder[a.location] ?? 9) - (locationOrder[b.location] ?? 9);
+  if (locationDifference) return locationDifference;
+
+  const brandDifference = (a.brand || '').localeCompare(b.brand || '');
+  if (brandDifference) return brandDifference;
+  return (a.model || '').localeCompare(b.model || '');
+}
+
 function filteredClubs() {
   const q = search.value.trim().toLowerCase();
-  return clubs.filter(c => {
+  const filtered = clubs.filter(c => {
     const locationOk = activeLocation === 'All' || c.location === activeLocation;
     const haystack = Object.values(c).join(' ').toLowerCase();
     return locationOk && (!q || haystack.includes(q));
   });
+
+  return activeLocation === 'All' ? filtered.sort(allClubsComparator) : filtered;
 }
 
 function clubCategory(club='') {
@@ -918,6 +1006,9 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
 });
+
+document.getElementById('releaseBadge').textContent = `v${APP_VERSION} • ${RELEASED_DISPLAY}`;
+document.getElementById('releaseFooter').textContent = `Release v${APP_VERSION} • ${RELEASED_DISPLAY}`;
 
 render();
 </script>
