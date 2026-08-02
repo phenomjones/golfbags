@@ -19,6 +19,7 @@
     --driver-bg: #fff1d6;
     --wood-bg: #e7f3ff;
     --iron-bg: #edf7e8;
+    --hybrid-bg: #e9f7f5;
     --wedge-bg: #f4eaff;
     --putter-bg: #ffe9ee;
   }
@@ -110,6 +111,7 @@
   tr.category-driver td { background: var(--driver-bg); }
   tr.category-wood td { background: var(--wood-bg); }
   tr.category-iron td { background: var(--iron-bg); }
+  tr.category-hybrid td { background: var(--hybrid-bg); }
   tr.category-wedge td { background: var(--wedge-bg); }
   tr.category-putter td { background: var(--putter-bg); }
   tr:hover td { filter: brightness(.985); }
@@ -144,6 +146,29 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .form-grid { grid-template-columns: 1fr; }
     .form-grid .full { grid-column: auto; }
+    main { padding: 16px 10px 36px; }
+    header { padding: 22px 14px 20px; }
+    .toolbar { gap: 8px; }
+    button, input, select, textarea { min-height: 44px; }
+    .tabs { gap: 7px; }
+    .tab { padding: 11px 13px; }
+    .table-wrap {
+      margin: 0 -2px;
+      border-radius: 12px;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+    }
+    table { min-width: 1220px; }
+    th, td { padding: 14px 12px; }
+    td { font-size: 15px; line-height: 1.35; }
+    th { font-size: 11px; }
+    .actions { flex-direction: column; min-width: 76px; }
+    .actions button { min-height: 40px; padding: 9px 10px; font-size: 13px; }
+    .brand-badge { padding: 7px 10px; }
+    .brand-logo { width: 46px; height: 26px; flex-basis: 46px; }
+    .club-icon { width: 28px; height: 28px; flex-basis: 28px; }
+    .grip-pill { padding: 7px 10px; }
+    .club-number { font-size: 16px; }
   }
 
   .brand-cell { white-space: nowrap; }
@@ -153,31 +178,23 @@
     gap: 8px;
     padding: 6px 10px;
     border-radius: 999px;
-    background: #f7faf8;
-    border: 1px solid var(--line);
-    font-weight: 700;
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(24,33,28,.10);
+    font-weight: 750;
     line-height: 1;
   }
-  .brand-mark {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 800;
-    color: white;
-    letter-spacing: 0.02em;
-    flex: 0 0 22px;
+  .brand-logo {
+    width: 42px;
+    height: 24px;
+    display: block;
+    flex: 0 0 42px;
   }
-  .brand-ping { background: #f97316; }
-  .brand-callaway { background: #111827; }
-  .brand-srixon { background: #1d4ed8; }
-  .brand-taylormade { background: #6d28d9; }
-  .brand-cleveland { background: #7c2d12; }
-  .brand-scotty-cameron { background: #be123c; }
-  .brand-default { background: #475569; }
+  .brand-logo text {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 900;
+    dominant-baseline: middle;
+    text-anchor: middle;
+  }
 
   .club-cell {
     display: inline-flex;
@@ -250,6 +267,39 @@
     border-color: #e2e8f0;
   }
 
+
+  .speak-status {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 14px;
+  }
+  .speak-status.listening {
+    background: #fee2e2;
+    color: #991b1b;
+    font-weight: 700;
+  }
+  .speak-example {
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
+  }
+  .speak-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  #speechText { min-height: 150px; }
+  .mic-button.listening { animation: pulseMic 1.2s infinite; }
+  @keyframes pulseMic {
+    0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(168,50,50,.35); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 8px rgba(168,50,50,0); }
+  }
+
 </style>
 </head>
 <body>
@@ -263,6 +313,7 @@
   <section class="toolbar">
     <input id="search" type="search" placeholder="Search club, model, shaft, grip, notes…" />
     <button class="primary" id="addBtn">+ Add Club</button>
+    <button class="secondary" id="speakBtn">🎙️ Speak to Add</button>
     <button class="secondary" id="exportBtn">Export CSV</button>
     <button class="secondary" id="resetBtn">Reset Data</button>
   </section>
@@ -284,7 +335,8 @@
   <div class="legend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--wood-bg)"></span>Fairway Woods</span>
-    <span class="legend-item"><span class="legend-swatch" style="background:var(--iron-bg)"></span>Irons / Hybrids</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--iron-bg)"></span>Irons</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--hybrid-bg)"></span>Hybrids</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--wedge-bg)"></span>Wedges</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--putter-bg)"></span>Putter</span>
   </div>
@@ -325,6 +377,23 @@
       </div>
     </div>
   </form>
+</dialog>
+
+
+<dialog id="speakDialog">
+  <div class="modal-head"><h2>Speak to Add a Club</h2></div>
+  <div class="modal-body">
+    <p class="speak-example">Include the location while speaking. Example: “Add to Bag 2, Ping G440 LST driver, 9 degrees, Diamana Blue Board 63 X, Golf Pride CP2 Pro red cap standard.”</p>
+    <label for="speechText">Club description</label>
+    <textarea id="speechText" placeholder="Tap Start Listening, or use the iPhone keyboard microphone to dictate here."></textarea>
+    <div id="speechStatus" class="speak-status">Ready. Your description will be parsed into the Add Club form for review.</div>
+    <div class="speak-controls">
+      <button type="button" class="primary mic-button" id="startSpeechBtn">🎙️ Start Listening</button>
+      <button type="button" class="secondary" id="stopSpeechBtn" disabled>Stop</button>
+      <button type="button" class="secondary" id="closeSpeechBtn">Cancel</button>
+      <button type="button" class="primary" id="parseSpeechBtn">Parse Description</button>
+    </div>
+  </div>
 </dialog>
 
 <script>
@@ -414,6 +483,7 @@ function clubCategory(club='') {
   if (name.includes('putter')) return 'putter';
   if (name === 'driver' || name.includes('driver')) return 'driver';
   if (name.includes('wood')) return 'wood';
+  if (name.includes('hybrid')) return 'hybrid';
   if (name.includes('wedge')) return 'wedge';
   return 'iron';
 }
@@ -428,40 +498,91 @@ function locationNumberMap() {
   return map;
 }
 
-function brandClass(brand='') {
-  const key = brand.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return key || 'default';
-}
-
-function brandMarkText(brand='') {
+function brandLogo(brand='') {
   const normalized = brand.toLowerCase();
-  if (normalized === 'taylormade') return 'TM';
-  if (normalized === 'scotty cameron') return 'SC';
-  if (normalized === 'callaway') return 'CA';
-  if (normalized === 'cleveland') return 'CG';
-  if (normalized === 'srixon') return 'SX';
-  if (normalized === 'ping') return 'P';
-  return brand.split(/\s+/).map(w => w[0] || '').join('').slice(0,2).toUpperCase() || '?';
+  const svgOpen = '<svg class="brand-logo" viewBox="0 0 84 48" aria-hidden="true" focusable="false">';
+  const close = '</svg>';
+  if (normalized === 'ping') {
+    return svgOpen + '<rect x="2" y="7" width="80" height="34" rx="8" fill="#111827"/><text x="42" y="25" font-size="22" fill="#fff" letter-spacing="2">PING</text>' + close;
+  }
+  if (normalized === 'callaway') {
+    return svgOpen + '<path d="M7 10 L42 38 L77 10 L68 10 L42 29 L16 10 Z" fill="#111827"/><text x="42" y="13" font-size="12" fill="#111827">CALLAWAY</text>' + close;
+  }
+  if (normalized === 'srixon') {
+    return svgOpen + '<path d="M4 35 L14 10 H80 L70 35 Z" fill="#1746a2"/><text x="42" y="24" font-size="17" fill="#fff" font-style="italic">SRIXON</text>' + close;
+  }
+  if (normalized === 'taylormade') {
+    return svgOpen + '<circle cx="42" cy="24" r="20" fill="#6d28d9"/><path d="M20 14 Q42 1 64 14 Q49 12 42 22 Q35 12 20 14Z" fill="#fff"/><text x="42" y="32" font-size="14" fill="#fff">TM</text>' + close;
+  }
+  if (normalized === 'cleveland') {
+    return svgOpen + '<circle cx="24" cy="24" r="20" fill="#7c2d12"/><text x="24" y="25" font-size="17" fill="#fff">CG</text><text x="61" y="24" font-size="11" fill="#7c2d12">CLEVELAND</text>' + close;
+  }
+  if (normalized === 'scotty cameron') {
+    return svgOpen + '<circle cx="22" cy="24" r="14" fill="#be123c"/><circle cx="42" cy="24" r="14" fill="#111827"/><circle cx="62" cy="24" r="14" fill="#be123c"/><text x="42" y="25" font-size="12" fill="#fff">SC</text>' + close;
+  }
+  const initials = brand.split(/\s+/).map(w => w[0] || '').join('').slice(0,2).toUpperCase() || '?';
+  return svgOpen + '<rect x="8" y="7" width="68" height="34" rx="9" fill="#475569"/><text x="42" y="25" font-size="18" fill="#fff">' + esc(initials) + '</text>' + close;
 }
 
 function brandBadge(brand='') {
   if (!brand) return '';
-  const cls = `brand-${brandClass(brand)}`;
-  return `<span class="brand-badge"><span class="brand-mark ${cls}">${esc(brandMarkText(brand))}</span><span>${esc(brand)}</span></span>`;
+  return `<span class="brand-badge">${brandLogo(brand)}<span>${esc(brand)}</span></span>`;
 }
 
 function gripDisplay(grip='') {
   if (!grip) return '';
-  const parts = grip.split(/\s+-\s+/).filter(Boolean);
-  if (parts.length < 2) return esc(grip);
-  const [model, color, size, ...rest] = parts;
-  const extra = rest.length ? ` <span class="grip-pill"><span class="grip-icon-small">➕</span><span>${esc(rest.join(' • '))}</span></span>` : '';
-  return `<span class="grip-display">`
-    + `<span class="grip-pill model"><span class="grip-icon-small">🧤</span><span>${esc(model)}</span></span>`
-    + `<span class="grip-pill color"><span class="grip-icon-small">🎨</span><span>${esc(color)}</span></span>`
-    + `<span class="grip-pill size"><span class="grip-icon-small">📏</span><span>${esc(size)}</span></span>`
-    + extra
-    + `</span>`;
+
+  const rawParts = grip.split(/\s+-\s+/).map(p => p.trim()).filter(Boolean);
+  if (!rawParts.length) return '';
+
+  const normalizeSize = value => {
+    const cleaned = value
+      .toLowerCase()
+      .replace(/[–—-]/g, ' ')
+      .replace(/\b(grip|size|sized)\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (/^standard$/.test(cleaned)) return 'Standard';
+    if (/^(midsize|mid size)$/.test(cleaned)) return 'Midsize';
+    if (/^jumbo$/.test(cleaned)) return 'Jumbo';
+    if (/^(undersize|under size)$/.test(cleaned)) return 'Undersize';
+    if (/^(oversize|over size)$/.test(cleaned)) return 'Oversize';
+    return '';
+  };
+
+  const model = rawParts.shift();
+  let color = '';
+  let size = '';
+  const extras = [];
+
+  rawParts.forEach(part => {
+    const detectedSize = normalizeSize(part);
+    if (detectedSize && !size) {
+      size = detectedSize;
+      return;
+    }
+
+    // Handle legacy values such as "Blue Cap Standard" or "Gold/Black Midsize".
+    const trailingSize = part.match(/^(.*?)(?:\s+)(standard(?:\s+(?:size|grip))?|mid[ -]?size(?:\s+grip)?|midsize(?:\s+grip)?|jumbo|under[ -]?size|over[ -]?size)$/i);
+    if (trailingSize) {
+      const possibleColor = trailingSize[1].trim();
+      const detectedTrailingSize = normalizeSize(trailingSize[2]);
+      if (possibleColor && !color) color = possibleColor;
+      else if (possibleColor) extras.push(possibleColor);
+      if (detectedTrailingSize && !size) size = detectedTrailingSize;
+      return;
+    }
+
+    if (!color) color = part;
+    else extras.push(part);
+  });
+
+  let html = `<span class="grip-display">`
+    + `<span class="grip-pill model"><span class="grip-icon-small">🧤</span><span>${esc(model)}</span></span>`;
+  if (color) html += `<span class="grip-pill color"><span class="grip-icon-small">🎨</span><span>${esc(color)}</span></span>`;
+  if (size) html += `<span class="grip-pill size"><span class="grip-icon-small">📏</span><span>${esc(size)}</span></span>`;
+  if (extras.length) html += `<span class="grip-pill"><span class="grip-icon-small">➕</span><span>${esc(extras.join(' • '))}</span></span>`;
+  return html + `</span>`;
 }
 
 function flexDisplay(flex='') {
@@ -481,6 +602,7 @@ function clubIcon(club='') {
   const category = clubCategory(club);
   if (category === 'driver') return '🏌️';
   if (category === 'wood') return '🌲';
+  if (category === 'hybrid') return '⚡';
   if (category === 'wedge') return '⛳';
   if (category === 'putter') return '🎯';
   return '🔩';
@@ -516,6 +638,216 @@ function render() {
   document.getElementById('bag2Count').closest('.stat').classList.toggle('over-limit', bag2 > 14);
 }
 
+
+const speakDialog = document.getElementById('speakDialog');
+const speechText = document.getElementById('speechText');
+const speechStatus = document.getElementById('speechStatus');
+const startSpeechBtn = document.getElementById('startSpeechBtn');
+const stopSpeechBtn = document.getElementById('stopSpeechBtn');
+let speechRecognition = null;
+
+function titleCaseWords(value='') {
+  return value.replace(/\b\w/g, ch => ch.toUpperCase());
+}
+
+function spokenNumberToDigits(value='') {
+  const replacements = [
+    [/seven\s*(?:and\s*)?a\s*half/gi,'7.5'], [/seven\s*point\s*five/gi,'7.5'],
+    [/nine\s*point\s*zero/gi,'9'], [/twenty\s*one/gi,'21'], [/twenty\s*five/gi,'25'],
+    [/fifty\s*four/gi,'54'], [/fifty\s*eight/gi,'58'], [/nineteen/gi,'19'],
+    [/eighteen/gi,'18'], [/seventeen/gi,'17'], [/fifteen/gi,'15'],
+    [/thirteen\s*(?:and\s*)?a\s*half/gi,'13.5'], [/twelve/gi,'12'],
+    [/eleven/gi,'11'], [/ten/gi,'10'], [/nine/gi,'9'], [/eight/gi,'8'],
+    [/seven/gi,'7'], [/six/gi,'6'], [/five/gi,'5'], [/four/gi,'4'],
+    [/three/gi,'3'], [/two/gi,'2'], [/one/gi,'1']
+  ];
+  return replacements.reduce((s,[pattern,replacement])=>s.replace(pattern,replacement), value);
+}
+
+function cleanSpeech(value='') {
+  return spokenNumberToDigits(value)
+    .replace(/degrees?/gi, '°')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseLocation(text) {
+  if (/\bbag\s*(?:number\s*)?1\b|\bbag one\b/i.test(text)) return 'Bag 1';
+  if (/\bbag\s*(?:number\s*)?2\b|\bbag two\b/i.test(text)) return 'Bag 2';
+  if (/\bspare(?:\s+clubs?)?\b|\bspares\b/i.test(text)) return 'Spare Clubs';
+  return '';
+}
+
+function parseClubType(text) {
+  const patterns = [
+    [/\bdriver\b/i,'Driver'], [/\bputter\b/i,'Putter'],
+    [/\b(?:pitching|p)\s*wedge\b/i,'Pitching Wedge'], [/\b(?:gap|approach|a)\s*wedge\b/i,'Gap Wedge'],
+    [/\b(\d+)\s*[- ]?wood\b/i, m=>`${m[1]}-Wood`],
+    [/\b(\d+)\s*[- ]?hybrid\b/i, m=>`${m[1]}-Hybrid`],
+    [/\bdriving\s*iron\b/i,'Driving Iron'],
+    [/\b(\d+)\s*[- ]?iron\b/i, m=>`${m[1]}-Iron`],
+    [/\bwedge\b/i,'Wedge']
+  ];
+  for (const [pattern,result] of patterns) {
+    const match=text.match(pattern);
+    if (match) return typeof result==='function' ? result(match) : result;
+  }
+  return '';
+}
+
+function parseBrand(text) {
+  const brands = [
+    ['TaylorMade',/\btaylor\s*made\b/i], ['Scotty Cameron',/\bscotty\s*cameron\b/i],
+    ['Callaway',/\bcallaway\b/i], ['Cleveland',/\bcleveland\b/i],
+    ['Srixon',/\bsrixon\b|\btricks?on\b/i], ['Ping',/\bping\b/i]
+  ];
+  return brands.find(([,p])=>p.test(text))?.[0] || '';
+}
+
+function parseLoft(text) {
+  const degreeMatch=text.match(/\b(\d{1,2}(?:\.5)?)\s*°/i);
+  if (degreeMatch) return `${degreeMatch[1]}°`;
+  const loftMatch=text.match(/\bloft(?:ed)?\s*(?:at|of)?\s*(\d{1,2}(?:\.5)?)/i);
+  return loftMatch ? `${loftMatch[1]}°` : '';
+}
+
+function parseFlex(text) {
+  if (/\b6\.5\s*(?:\/|or)?\s*x\b|\b6\.5\b/i.test(text)) return '6.5 / X';
+  if (/\bs\s*400\b/i.test(text)) return 'S400';
+  if (/\bx\s*stiff\b|\bextra\s*stiff\b|\bx[- ]?flex\b/i.test(text)) return 'X';
+  if (/\bstiff\b|\bs[- ]?flex\b/i.test(text)) return 'Stiff';
+  if (/\bwedge\s*flex\b/i.test(text)) return 'Wedge flex';
+  return '';
+}
+
+function parseGrip(text) {
+  const lower=text.toLowerCase();
+  let model='';
+  if (/cp\s*2\s*pro/.test(lower)) model='Golf Pride CP2 Pro';
+  else if (/cp\s*2\s*wrap/.test(lower)) model='Golf Pride CP2 Wrap';
+  else if (/new\s*decade\s*multi\s*compound|ndmc/.test(lower)) model='Golf Pride New Decade MultiCompound';
+  else if (/mcc\s*plus\s*4|mcc\s*plus/.test(lower)) model='Golf Pride MCC Plus';
+  else if (/tour\s*velvet\s*plus\s*4/.test(lower)) model='Golf Pride Tour Velvet Plus4';
+  else if (/tour\s*velvet\s*360/.test(lower)) model='Golf Pride Tour Velvet 360';
+  else if (/tour\s*velvet/.test(lower)) model='Golf Pride Tour Velvet';
+  else if (/z[- ]?grip/.test(lower)) model='Golf Pride Z-Grip';
+  else if (/thin\s*pistol/.test(lower)) model='Scotty Cameron Design Thin Pistol';
+  else if (/golf\s*pride/.test(lower)) model='Golf Pride';
+  if (!model) return '';
+  const color = /red\s*cap/.test(lower) ? 'Red Cap' : /blue\s*cap/.test(lower) ? 'Blue Cap' : /gold\s*(?:and|\/)?\s*black/.test(lower) ? 'Gold/Black' : /green\s*(?:and|\/)?\s*black/.test(lower) ? 'Green/Black' : '';
+  const size = /mid\s*size|midsize/.test(lower) ? 'Midsize' : /jumbo/.test(lower) ? 'Jumbo' : /under\s*size|undersize/.test(lower) ? 'Undersize' : /standard(?:\s*size)?/.test(lower) ? 'Standard' : '';
+  return [model,color,size].filter(Boolean).join(' - ');
+}
+
+function parseShaft(text) {
+  const candidates = [
+    /(?:mitsubishi\s+)?diamana\s+(?:blue\s*board|bb)\s*\d{2,3}/i,
+    /(?:mitsubishi\s+)?tensei\s+(?:av\s+blue|1k\s+black)\s*\d{2,3}(?:\s*hybrid)?/i,
+    /(?:mitsubishi\s+)?kai[’'`]?li\s+hy\s*\d{2,3}/i,
+    /(?:graphite\s+design\s+)?tour\s+ad\s+[a-z]{2,3}[- ]?\d{1,3}/i,
+    /(?:fujikura\s+)?ventus\s+\d{1,2}x?\s*(?:velocore)?/i,
+    /(?:project\s+x\s+)?even\s*flow\s+riptide(?:\s+hybrid)?\s*\d{2,3}/i,
+    /(?:mitsubishi\s+)?mmt(?:\s+hybrid)?\s*\d{2,3}/i,
+    /dynamic\s+gold(?:\s+spinner\s+wedge)?(?:\s+tour\s+issue)?(?:\s+s\s*400)?/i
+  ];
+  for (const pattern of candidates) {
+    const match=text.match(pattern);
+    if (match) return titleCaseWords(match[0])
+      .replace(/Bb\b/g,'BB').replace(/Av\b/g,'AV').replace(/Hy\b/g,'HY')
+      .replace(/Mmt\b/g,'MMT').replace(/Ad\b/g,'AD').replace(/S 400\b/g,'S400');
+  }
+  return '';
+}
+
+function parseModel(text, brand, club, shaft) {
+  let working=text;
+  [brand,club,shaft].filter(Boolean).forEach(value=>{ working=working.replace(new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig'),' '); });
+  working=working
+    .replace(/add\s+(?:this\s+)?to\s+(?:bag\s*(?:1|2)|spare\s*clubs?)/ig,' ')
+    .replace(/(?:bag\s*(?:1|2)|spare\s*clubs?)/ig,' ')
+    .replace(/\b\d{1,2}(?:\.5)?\s*°/g,' ')
+    .replace(/\b(?:with|has|having|shaft|grip|standard|midsize|red cap|blue cap|x flex|x-stiff|stiff|s400|6\.5)\b/ig,' ')
+    .replace(/[,.;]/g,' ').replace(/\s+/g,' ').trim();
+  const known = [
+    ['G440 LST',/g\s*440\s*lst/i], ['G430 LST',/g\s*430\s*lst/i], ['G440 Max',/g\s*440\s*max/i],
+    ['Quantum Triple Diamond',/quantum\s+(?:triple\s+diamond|td)/i], ['Quantum Max',/quantum\s+max/i],
+    ['Qi35',/qi[- ]?35/i], ['Qi4D',/qi[- ]?4d/i], ['ZXi7',/zxi[- ]?7/i], ['ZXi',/\bzxi\b/i],
+    ['RTZ Tour Rack Full Face ADAPT 8',/rtz.*(?:full\s+face).*adapt\s*8/i],
+    ['RTZ Tour Rack Mid-10',/rtz.*(?:tour\s+rack)?.*mid[- ]?10/i],
+    ['Phantom 5.2',/phantom\s*5\.2/i], ['iDi',/\bidi\b/i]
+  ];
+  for (const [name,pattern] of known) if (pattern.test(text)) return name;
+  return working.length <= 45 ? titleCaseWords(working) : '';
+}
+
+function parseClubDescription(raw) {
+  const text=cleanSpeech(raw);
+  const location=parseLocation(text);
+  const club=parseClubType(text);
+  const brand=parseBrand(text);
+  const loft=parseLoft(text);
+  const flex=parseFlex(text);
+  const shaft=parseShaft(text);
+  const grip=parseGrip(text);
+  const model=parseModel(text,brand,club,shaft);
+  return {location,club,brand,model,loft,shaft,flex,grip,notes:`Added by voice from: ${raw.trim()}`};
+}
+
+function openParsedClub(parsed) {
+  openForm({
+    id:'', location:parsed.location || 'Bag 1', club:parsed.club, brand:parsed.brand,
+    model:parsed.model, loft:parsed.loft, shaft:parsed.shaft, flex:parsed.flex,
+    grip:parsed.grip, notes:parsed.notes
+  });
+  document.getElementById('clubId').value='';
+}
+
+function setSpeechState(message, listening=false) {
+  speechStatus.textContent=message;
+  speechStatus.classList.toggle('listening',listening);
+  startSpeechBtn.classList.toggle('listening',listening);
+  startSpeechBtn.disabled=listening;
+  stopSpeechBtn.disabled=!listening;
+}
+
+function beginSpeech() {
+  const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Recognition) {
+    setSpeechState('Live speech recognition is not supported in this browser. Use the iPhone keyboard microphone in the text box, then tap Parse Description.');
+    speechText.focus();
+    return;
+  }
+  speechRecognition=new Recognition();
+  speechRecognition.lang='en-US';
+  speechRecognition.interimResults=true;
+  speechRecognition.continuous=false;
+  let finalText='';
+  speechRecognition.onstart=()=>setSpeechState('Listening… say the bag, club, loft, shaft, flex, and grip.',true);
+  speechRecognition.onresult=e=>{
+    let interim='';
+    for (let i=e.resultIndex;i<e.results.length;i++) {
+      const transcript=e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += transcript + ' '; else interim += transcript;
+    }
+    speechText.value=(finalText+interim).trim();
+  };
+  speechRecognition.onerror=e=>setSpeechState(`Microphone error: ${e.error}. You can still dictate using the keyboard microphone.`);
+  speechRecognition.onend=()=>setSpeechState(speechText.value ? 'Finished. Review the description, then tap Parse Description.' : 'No speech captured. Try again or use keyboard dictation.');
+  speechRecognition.start();
+}
+
+function parseSpeechInput() {
+  const raw=speechText.value.trim();
+  if (!raw) { setSpeechState('Enter or dictate a club description first.'); return; }
+  const parsed=parseClubDescription(raw);
+  if (!parsed.location) {
+    setSpeechState('I could not identify Bag 1, Bag 2, or Spare Clubs. Include the location in the description.');
+    return;
+  }
+  speakDialog.close();
+  openParsedClub(parsed);
+}
+
 const dialog = document.getElementById('clubDialog');
 const form = document.getElementById('clubForm');
 const fields = ['clubId','location','clubType','brand','model','loft','shaft','flex','grip','notes'];
@@ -539,6 +871,11 @@ window.deleteClub = id => {
 };
 
 document.getElementById('addBtn').addEventListener('click', ()=>openForm());
+document.getElementById('speakBtn').addEventListener('click', ()=>{ speechText.value=''; setSpeechState('Ready. Your description will be parsed into the Add Club form for review.'); speakDialog.showModal(); });
+startSpeechBtn.addEventListener('click', beginSpeech);
+stopSpeechBtn.addEventListener('click', ()=>{ if (speechRecognition) speechRecognition.stop(); });
+document.getElementById('closeSpeechBtn').addEventListener('click', ()=>{ if (speechRecognition) speechRecognition.stop(); speakDialog.close(); });
+document.getElementById('parseSpeechBtn').addEventListener('click', parseSpeechInput);
 document.getElementById('cancelBtn').addEventListener('click', ()=>dialog.close());
 search.addEventListener('input', render);
 
