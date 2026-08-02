@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.8
-  Release date: August 1, 2026 at 11:48 PM EDT
-  Release timestamp: 2026-08-01T23:48:00-04:00
+  Version: v1.1.9
+  Release date: August 1, 2026 at 11:51 PM EDT
+  Release timestamp: 2026-08-01T23:51:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.8" />
-<meta name="release-date" content="2026-08-01T23:48:00-04:00" />
+<meta name="application-version" content="1.1.9" />
+<meta name="release-date" content="2026-08-01T23:51:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -390,7 +390,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.8 • August 1, 2026 at 11:48 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.9 • August 1, 2026 at 11:51 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -433,7 +433,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.8 • August 1, 2026 at 11:48 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.9 • August 1, 2026 at 11:51 PM EDT</span>
   </div>
 </main>
 
@@ -479,9 +479,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.5';
+const APP_VERSION = '1.1.9';
 const RELEASED_AT = '2026-08-01T23:48:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:48 PM EDT';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:51 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -1075,9 +1075,18 @@ function openForm(club=null) {
 window.editClub = id => openForm(clubs.find(c=>c.id===id));
 window.deleteClub = id => {
   const c = clubs.find(x=>x.id===id);
-  if (confirm(`Delete ${c?.brand || ''} ${c?.model || c?.club || 'club'}?`)) {
-    clubs = clubs.filter(x=>x.id!==id); saveData(); render();
-  }
+  if (!c) return;
+
+  const clubName = `${c.brand || ''} ${c.model || c.club || 'club'}`.trim();
+  const firstConfirmed = confirm(`Delete ${clubName}?`);
+  if (!firstConfirmed) return;
+
+  const secondConfirmed = confirm(`Are you absolutely sure you want to permanently remove ${clubName} from your inventory?`);
+  if (!secondConfirmed) return;
+
+  clubs = clubs.filter(x=>x.id!==id);
+  saveData();
+  render();
 };
 
 document.getElementById('addBtn').addEventListener('click', ()=>openForm());
