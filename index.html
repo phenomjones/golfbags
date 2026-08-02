@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.3
-  Release date: August 1, 2026 at 11:26 PM EDT
-  Release timestamp: 2026-08-01T23:26:00-04:00
+  Version: v1.1.4
+  Release date: August 1, 2026 at 11:28 PM EDT
+  Release timestamp: 2026-08-01T23:28:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.3" />
-<meta name="release-date" content="2026-08-01T23:26:00-04:00" />
+<meta name="application-version" content="1.1.4" />
+<meta name="release-date" content="2026-08-01T23:28:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -88,19 +88,27 @@
     margin: 16px 0;
   }
   .stat {
+    width: 100%;
+    min-height: 78px;
+    appearance: none;
+    text-align: left;
+    color: var(--ink);
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 14px 16px;
     box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
+  .stat:hover { transform: translateY(-1px); border-color: #a9bbb0; }
+  .stat:focus-visible { outline: 3px solid rgba(23,107,69,.25); outline-offset: 2px; }
+  .stat.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(23,107,69,.14), var(--shadow); }
   .stat strong { display: block; font-size: 24px; }
   .stat.over-limit { border-color: #d98b00; background: #fff7e6; }
   .stat.over-limit strong { color: #a85f00; }
+  .stat.over-limit.active { box-shadow: 0 0 0 2px rgba(217,139,0,.18), var(--shadow); }
   .stat span { color: var(--muted); font-size: 13px; }
-  .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 18px 0 12px; }
-  .tab { background: white; border: 1px solid var(--line); color: var(--ink); }
-  .tab.active { background: var(--accent); color: white; border-color: var(--accent); }
   .table-wrap {
     overflow-x: auto;
     background: var(--panel);
@@ -362,7 +370,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.3 • August 1, 2026 at 11:26 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.4 • August 1, 2026 at 11:28 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -376,19 +384,12 @@
     <button class="secondary" id="resetBtn">Reset Data</button>
   </section>
 
-  <section class="stats">
-    <div class="stat"><strong id="totalCount">0</strong><span>Total clubs</span></div>
-    <div class="stat"><strong id="bag1Count">0</strong><span>Bag 1</span></div>
-    <div class="stat"><strong id="bag2Count">0</strong><span>Bag 2</span></div>
-    <div class="stat"><strong id="spareCount">0</strong><span>Spare clubs</span></div>
+  <section class="stats" aria-label="Inventory views">
+    <button type="button" class="stat active" data-location="All" aria-pressed="true"><strong id="totalCount">0</strong><span>Total clubs</span></button>
+    <button type="button" class="stat" data-location="Bag 1" aria-pressed="false"><strong id="bag1Count">0</strong><span>Bag 1</span></button>
+    <button type="button" class="stat" data-location="Bag 2" aria-pressed="false"><strong id="bag2Count">0</strong><span>Bag 2</span></button>
+    <button type="button" class="stat" data-location="Spare Clubs" aria-pressed="false"><strong id="spareCount">0</strong><span>Spare clubs</span></button>
   </section>
-
-  <nav class="tabs" aria-label="Inventory filters">
-    <button class="tab active" data-location="All">All Clubs</button>
-    <button class="tab" data-location="Bag 1">Bag 1</button>
-    <button class="tab" data-location="Bag 2">Bag 2</button>
-    <button class="tab" data-location="Spare Clubs">Spare Clubs</button>
-  </nav>
 
   <div class="legend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
@@ -412,7 +413,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.3 • August 1, 2026 at 11:26 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.1.4 • August 1, 2026 at 11:28 PM EDT</span>
   </div>
 </main>
 
@@ -458,9 +459,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.3';
-const RELEASED_AT = '2026-08-01T23:26:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:26 PM EDT';
+const APP_VERSION = '1.1.4';
+const RELEASED_AT = '2026-08-01T23:28:00-04:00';
+const RELEASED_DISPLAY = 'August 1, 2026 at 11:28 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -995,9 +996,15 @@ document.getElementById('parseSpeechBtn').addEventListener('click', parseSpeechI
 document.getElementById('cancelBtn').addEventListener('click', ()=>dialog.close());
 search.addEventListener('input', render);
 
-document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active'); activeLocation = btn.dataset.location; render();
+document.querySelectorAll('.stat[data-location]').forEach(card => card.addEventListener('click', () => {
+  document.querySelectorAll('.stat[data-location]').forEach(item => {
+    const selected = item === card;
+    item.classList.toggle('active', selected);
+    item.setAttribute('aria-pressed', String(selected));
+  });
+  activeLocation = card.dataset.location;
+  render();
+  document.querySelector('.table-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }));
 
 form.addEventListener('submit', e => {
