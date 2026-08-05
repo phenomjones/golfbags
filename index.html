@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.1.10
-  Release date: August 1, 2026 at 11:55 PM EDT
-  Release timestamp: 2026-08-01T23:55:00-04:00
+  Version: v1.2.0
+  Release date: August 5, 2026 at 6:20 PM EDT
+  Release timestamp: 2026-08-05T18:20:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.1.10" />
-<meta name="release-date" content="2026-08-01T23:55:00-04:00" />
+<meta name="application-version" content="1.2.0" />
+<meta name="release-date" content="2026-08-05T18:20:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -383,6 +383,14 @@
   }
   .release-footer { font-weight: 650; }
 
+
+  .shaft-table-wrap { display: none; }
+  .shaft-table-wrap.active { display: block; }
+  .club-table-wrap.hidden, .legend.hidden { display: none; }
+  .shaft-row { background: #f3f0ff; }
+  .shaft-icon { display:inline-flex; width:26px; height:26px; align-items:center; justify-content:center; border-radius:999px; background:#e8ddff; margin-right:7px; }
+  .stat-shafts.active { border-color:#6d28d9; box-shadow:0 0 0 2px rgba(109,40,217,.12); }
+
 </style>
 </head>
 <body>
@@ -390,15 +398,16 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.1.9 • August 1, 2026 at 11:51 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.2.0 • August 5, 2026 at 6:20 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
 </header>
 <main>
   <section class="toolbar">
-    <input id="search" type="search" placeholder="Search club, model, shaft, grip, notes…" />
+    <input id="search" type="search" placeholder="Search clubs or shafts…" />
     <button class="primary" id="addBtn">+ Add Club</button>
+    <button class="secondary" id="addShaftBtn">+ Add Shaft</button>
     <button class="secondary" id="speakBtn">🎙️ Speak to Add</button>
     <button class="secondary" id="exportBtn">Export CSV</button>
     <button class="secondary" id="resetBtn">Reset Data</button>
@@ -409,9 +418,10 @@
     <button type="button" class="stat" data-location="Bag 1" aria-pressed="false"><strong id="bag1Count">0</strong><span>Bag 1</span></button>
     <button type="button" class="stat" data-location="Bag 2" aria-pressed="false"><strong id="bag2Count">0</strong><span>Bag 2</span></button>
     <button type="button" class="stat" data-location="Spare Clubs" aria-pressed="false"><strong id="spareCount">0</strong><span>Spare clubs</span></button>
+    <button type="button" class="stat stat-shafts" data-location="Shafts" aria-pressed="false"><strong id="shaftCount">0</strong><span>Loose shafts</span></button>
   </section>
 
-  <div class="legend" aria-label="Club category colors">
+  <div class="legend" id="clubLegend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--wood-bg)"></span>Fairway Woods</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--iron-bg)"></span>Irons</span>
@@ -420,7 +430,7 @@
     <span class="legend-item"><span class="legend-swatch" style="background:var(--putter-bg)"></span>Putter</span>
   </div>
 
-  <div class="table-wrap">
+  <div class="table-wrap club-table-wrap" id="clubTableWrap">
     <table>
       <thead>
         <tr>
@@ -431,9 +441,17 @@
     </table>
     <div id="emptyState" class="empty" hidden>No clubs match this view.</div>
   </div>
+
+  <div class="table-wrap shaft-table-wrap" id="shaftTableWrap">
+    <table>
+      <thead><tr><th>#</th><th>Make</th><th>Model</th><th>Adapter</th><th>Weight</th><th>Suggested Club</th><th>Stiffness</th><th>Notes</th><th>Actions</th></tr></thead>
+      <tbody id="shaftBody"></tbody>
+    </table>
+    <div id="shaftEmptyState" class="empty" hidden>No shafts match this view.</div>
+  </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.1.9 • August 1, 2026 at 11:51 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.2.0 • August 5, 2026 at 6:20 PM EDT</span>
   </div>
 </main>
 
@@ -478,6 +496,26 @@
   </div>
 </dialog>
 
+
+<dialog id="shaftDialog">
+  <form method="dialog" id="shaftForm">
+    <div class="modal-head"><h2 id="shaftDialogTitle">Add Shaft</h2></div>
+    <div class="modal-body">
+      <input type="hidden" id="shaftId" />
+      <div class="form-grid">
+        <div><label for="shaftMake">Make</label><input id="shaftMake" required placeholder="Mitsubishi" /></div>
+        <div><label for="shaftModel">Model</label><input id="shaftModel" required placeholder="Diamana Blue Board" /></div>
+        <div><label for="shaftAdapter">Adapter</label><select id="shaftAdapter"><option value="">None / Unspecified</option><option>Callaway</option><option>Ping</option><option>Titleist</option><option>TaylorMade</option><option>Cobra</option><option>Srixon</option><option>PXG</option><option>Other</option></select></div>
+        <div><label for="shaftWeight">Weight</label><input id="shaftWeight" placeholder="63g" /></div>
+        <div><label for="shaftSuggestedClub">Suggested Club</label><input id="shaftSuggestedClub" placeholder="Driver, 3-Wood, Hybrid…" /></div>
+        <div><label for="shaftStiffness">Stiffness</label><input id="shaftStiffness" placeholder="X, TX, Stiff…" /></div>
+        <div class="full"><label for="shaftNotes">Notes</label><textarea id="shaftNotes" rows="3" placeholder="Length, tipping, grip, condition, etc."></textarea></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary" id="cancelShaftBtn">Cancel</button><button type="submit" class="primary">Save Shaft</button></div>
+    </div>
+  </form>
+</dialog>
+
 <script>
 const APP_VERSION = '1.1.10';
 const RELEASED_AT = '2026-08-01T23:55:00-04:00';
@@ -520,7 +558,9 @@ const STARTER_DATA = [
 ].map((item, i) => ({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+i), ...item }));
 
 const STORAGE_KEY = 'golfClubInventoryV1';
+const SHAFT_STORAGE_KEY = 'golfShaftInventoryV1';
 let clubs = loadData();
+let shafts = loadShaftData();
 let activeLocation = 'All';
 let loftSortDirection = null;
 
@@ -613,6 +653,18 @@ function loadData() {
 function saveData() {
   return safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
 }
+function loadShaftData() {
+  const saved = safeStorageGet(SHAFT_STORAGE_KEY);
+  if (!saved) return [];
+  try {
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed.filter(item => item && typeof item === 'object') : [];
+  } catch (error) {
+    console.warn('Could not load saved shaft inventory.', error);
+    return [];
+  }
+}
+function saveShaftData() { return safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts)); }
 function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 const body = document.getElementById('inventoryBody');
@@ -620,6 +672,11 @@ const search = document.getElementById('search');
 const emptyState = document.getElementById('emptyState');
 const loftSortBtn = document.getElementById('loftSortBtn');
 const loftSortIcon = document.getElementById('loftSortIcon');
+const clubTableWrap = document.getElementById('clubTableWrap');
+const shaftTableWrap = document.getElementById('shaftTableWrap');
+const clubLegend = document.getElementById('clubLegend');
+const shaftBody = document.getElementById('shaftBody');
+const shaftEmptyState = document.getElementById('shaftEmptyState');
 
 function clubSortRank(item) {
   const club = (item.club || '').toLowerCase();
@@ -817,8 +874,34 @@ function clubIcon(club='') {
   return '🔩';
 }
 
+function filteredShafts() {
+  const q = search.value.trim().toLowerCase();
+  return shafts.filter(s => !q || Object.values(s).join(' ').toLowerCase().includes(q));
+}
+
+function renderShafts() {
+  const data = filteredShafts();
+  shaftBody.innerHTML = data.map((s, index) => `
+    <tr class="shaft-row">
+      <td class="club-number">${index + 1}</td>
+      <td><span class="shaft-icon">🪄</span><strong>${esc(s.make)}</strong></td>
+      <td>${esc(s.model)}</td><td>${esc(s.adapter)}</td><td>${esc(s.weight)}</td>
+      <td>${esc(s.suggestedClub)}</td><td>${flexDisplay(s.stiffness)}</td><td>${esc(s.notes)}</td>
+      <td><div class="actions"><button class="secondary" onclick="editShaft('${s.id}')">Edit</button><button class="danger" onclick="deleteShaft('${s.id}')">Delete</button></div></td>
+    </tr>`).join('');
+  shaftEmptyState.hidden = data.length !== 0;
+  shaftTableWrap.querySelector('table').style.display = data.length ? 'table' : 'none';
+}
+
 function render() {
-  const data = filteredClubs();
+  const showingShafts = activeLocation === 'Shafts';
+  clubTableWrap.classList.toggle('hidden', showingShafts);
+  clubLegend.classList.toggle('hidden', showingShafts);
+  shaftTableWrap.classList.toggle('active', showingShafts);
+  if (showingShafts) {
+    renderShafts();
+  }
+  const data = showingShafts ? [] : filteredClubs();
   loftSortBtn.setAttribute('aria-pressed', loftSortDirection ? 'true' : 'false');
   loftSortIcon.textContent = loftSortDirection === 'asc' ? '↑' : loftSortDirection === 'desc' ? '↓' : '↕';
   loftSortBtn.title = loftSortDirection === 'asc' ? 'Loft: low to high' : loftSortDirection === 'desc' ? 'Loft: high to low' : 'Sort by loft';
@@ -838,7 +921,7 @@ function render() {
       <td><div class="actions"><button class="secondary" onclick="editClub('${c.id}')">Edit</button><button class="danger" onclick="deleteClub('${c.id}')">Delete</button></div></td>
     </tr>`).join('');
   emptyState.hidden = data.length !== 0;
-  document.querySelector('table').style.display = data.length ? 'table' : 'none';
+  clubTableWrap.querySelector('table').style.display = data.length ? 'table' : 'none';
   const bag1 = clubs.filter(c=>c.location==='Bag 1').length;
   const bag2 = clubs.filter(c=>c.location==='Bag 2').length;
   const spares = clubs.filter(c=>c.location==='Spare Clubs').length;
@@ -846,6 +929,7 @@ function render() {
   document.getElementById('bag1Count').textContent = bag1 > 14 ? `${bag1} ⚠` : bag1;
   document.getElementById('bag2Count').textContent = bag2 > 14 ? `${bag2} ⚠` : bag2;
   document.getElementById('spareCount').textContent = spares;
+  document.getElementById('shaftCount').textContent = shafts.length;
   document.getElementById('bag1Count').closest('.stat').classList.toggle('over-limit', bag1 > 14);
   document.getElementById('bag2Count').closest('.stat').classList.toggle('over-limit', bag2 > 14);
 }
@@ -1091,6 +1175,47 @@ window.deleteClub = id => {
   render();
 };
 
+const shaftDialog = document.getElementById('shaftDialog');
+const shaftForm = document.getElementById('shaftForm');
+function openShaftForm(shaft=null) {
+  document.getElementById('shaftDialogTitle').textContent = shaft ? 'Edit Shaft' : 'Add Shaft';
+  document.getElementById('shaftId').value = shaft?.id || '';
+  document.getElementById('shaftMake').value = shaft?.make || '';
+  document.getElementById('shaftModel').value = shaft?.model || '';
+  document.getElementById('shaftAdapter').value = shaft?.adapter || '';
+  document.getElementById('shaftWeight').value = shaft?.weight || '';
+  document.getElementById('shaftSuggestedClub').value = shaft?.suggestedClub || '';
+  document.getElementById('shaftStiffness').value = shaft?.stiffness || '';
+  document.getElementById('shaftNotes').value = shaft?.notes || '';
+  shaftDialog.showModal();
+}
+window.editShaft = id => openShaftForm(shafts.find(s => s.id === id));
+window.deleteShaft = id => {
+  const s = shafts.find(x => x.id === id);
+  const label = `${s?.make || ''} ${s?.model || 'shaft'}`.trim();
+  if (!confirm(`Delete ${label}?`)) return;
+  if (!confirm(`Are you absolutely sure you want to permanently remove ${label} from your inventory?`)) return;
+  shafts = shafts.filter(x => x.id !== id); saveShaftData(); render();
+};
+shaftForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const id = document.getElementById('shaftId').value;
+  const item = {
+    id: id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    make: document.getElementById('shaftMake').value.trim(),
+    model: document.getElementById('shaftModel').value.trim(),
+    adapter: document.getElementById('shaftAdapter').value,
+    weight: document.getElementById('shaftWeight').value.trim(),
+    suggestedClub: document.getElementById('shaftSuggestedClub').value.trim(),
+    stiffness: document.getElementById('shaftStiffness').value.trim(),
+    notes: document.getElementById('shaftNotes').value.trim()
+  };
+  if (id) shafts = shafts.map(s => s.id === id ? item : s); else shafts.push(item);
+  saveShaftData(); shaftDialog.close(); render();
+});
+document.getElementById('addShaftBtn').addEventListener('click', ()=>openShaftForm());
+document.getElementById('cancelShaftBtn').addEventListener('click', ()=>shaftDialog.close());
+
 document.getElementById('addBtn').addEventListener('click', ()=>openForm());
 document.getElementById('speakBtn').addEventListener('click', ()=>{ speechText.value=''; setSpeechState('Ready. Your description will be parsed into the Add Club form for review.'); speakDialog.showModal(); });
 startSpeechBtn.addEventListener('click', beginSpeech);
@@ -1136,7 +1261,7 @@ form.addEventListener('submit', e => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (confirm('Reset the inventory to the original starter data? This will erase your browser edits.')) {
-    clubs = cloneStarterData(); saveData(); render();
+    clubs = cloneStarterData(); shafts = []; saveData(); saveShaftData(); render();
   }
 });
 
@@ -1144,7 +1269,11 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const headers = ['Number','Location','Club','Brand','Model','Loft','Shaft','Flex','Grip','Notes'];
   const exportNumbers = locationNumberMap();
   const rows = clubs.map(c => [exportNumbers[c.id],c.location,c.club,c.brand,c.model,c.loft,c.shaft,c.flex,c.grip,c.notes]);
-  const csv = [headers,...rows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const shaftHeaders = ['Inventory Type','Make','Model','Adapter','Weight','Suggested Club','Stiffness','Notes'];
+  const shaftRows = shafts.map(s => ['Shaft',s.make,s.model,s.adapter,s.weight,s.suggestedClub,s.stiffness,s.notes]);
+  const clubRows = [headers,...rows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const shaftCsv = [shaftHeaders,...shaftRows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const csv = clubRows + '\n\n' + shaftCsv;
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
