@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.2.0
-  Release date: August 5, 2026 at 6:20 PM EDT
-  Release timestamp: 2026-08-05T18:20:00-04:00
+  Version: v1.2.1
+  Release date: August 5, 2026 at 6:23 PM EDT
+  Release timestamp: 2026-08-05T18:23:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.2.0" />
-<meta name="release-date" content="2026-08-05T18:20:00-04:00" />
+<meta name="application-version" content="1.2.1" />
+<meta name="release-date" content="2026-08-05T18:23:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -391,6 +391,37 @@
   .shaft-icon { display:inline-flex; width:26px; height:26px; align-items:center; justify-content:center; border-radius:999px; background:#e8ddff; margin-right:7px; }
   .stat-shafts.active { border-color:#6d28d9; box-shadow:0 0 0 2px rgba(109,40,217,.12); }
 
+
+  .maintenance-section {
+    margin-top: 34px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .maintenance-copy strong {
+    display: block;
+    color: var(--ink);
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+  .reset-button {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    font-size: 12px;
+    padding: 8px 11px;
+    min-height: 36px;
+  }
+  .reset-button:hover { color: var(--danger); border-color: rgba(168,50,50,.45); background: #fff7f7; }
+  @media (max-width: 620px) {
+    .maintenance-section { align-items: flex-start; flex-direction: column; }
+  }
+
 </style>
 </head>
 <body>
@@ -398,7 +429,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.2.0 • August 5, 2026 at 6:20 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.2.1 • August 5, 2026 at 6:23 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -410,7 +441,6 @@
     <button class="secondary" id="addShaftBtn">+ Add Shaft</button>
     <button class="secondary" id="speakBtn">🎙️ Speak to Add</button>
     <button class="secondary" id="exportBtn">Export CSV</button>
-    <button class="secondary" id="resetBtn">Reset Data</button>
   </section>
 
   <section class="stats" aria-label="Inventory views">
@@ -451,8 +481,16 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.2.0 • August 5, 2026 at 6:20 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.2.1 • August 5, 2026 at 6:23 PM EDT</span>
   </div>
+
+  <section class="maintenance-section" aria-label="Data maintenance">
+    <div class="maintenance-copy">
+      <strong>Data maintenance</strong>
+      Resetting restores the built-in starter inventory and permanently removes browser edits and loose shafts.
+    </div>
+    <button type="button" class="reset-button" id="resetBtn">Reset all data</button>
+  </section>
 </main>
 
 <dialog id="clubDialog">
@@ -517,9 +555,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.1.10';
-const RELEASED_AT = '2026-08-01T23:55:00-04:00';
-const RELEASED_DISPLAY = 'August 1, 2026 at 11:55 PM EDT';
+const APP_VERSION = '1.2.1';
+const RELEASED_AT = '2026-08-05T18:23:00-04:00';
+const RELEASED_DISPLAY = 'August 5, 2026 at 6:23 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -1260,9 +1298,21 @@ form.addEventListener('submit', e => {
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
-  if (confirm('Reset the inventory to the original starter data? This will erase your browser edits.')) {
-    clubs = cloneStarterData(); shafts = []; saveData(); saveShaftData(); render();
-  }
+  const firstConfirmed = confirm(
+    'Reset all inventory data? This will replace your current clubs with the built-in starter inventory and delete all loose shafts.'
+  );
+  if (!firstConfirmed) return;
+
+  const finalConfirmed = confirm(
+    'Are you absolutely sure? This permanently removes all browser edits and loose shafts. This action cannot be undone.'
+  );
+  if (!finalConfirmed) return;
+
+  clubs = cloneStarterData();
+  shafts = [];
+  saveData();
+  saveShaftData();
+  render();
 });
 
 document.getElementById('exportBtn').addEventListener('click', () => {
