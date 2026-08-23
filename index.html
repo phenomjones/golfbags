@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.6
-  Release date: August 22, 2026 at 10:00 PM EDT
-  Release timestamp: 2026-08-22T22:00:00-04:00
+  Version: v1.4.8
+  Release date: August 22, 2026 at 10:04 PM EDT
+  Release timestamp: 2026-08-22T22:04:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.6" />
-<meta name="release-date" content="2026-08-22T22:00:00-04:00" />
+<meta name="application-version" content="1.4.8" />
+<meta name="release-date" content="2026-08-22T22:04:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -487,7 +487,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.4 • August 22, 2026 at 10:00 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.8 • August 22, 2026 at 10:04 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -548,7 +548,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.4 • August 22, 2026 at 10:00 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.8 • August 22, 2026 at 10:04 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -572,7 +572,7 @@
         <div><label for="model">Model</label><input id="model" placeholder="G440 LST" /></div>
         <div><label for="loft">Loft</label><input id="loft" inputmode="decimal" placeholder="7.5°" /><div class="format-hint">Numbers are saved with the ° symbol automatically.</div></div>
         <div><label for="flex">Flex</label><input id="flex" placeholder="X, Stiff, S400…" /></div>
-        <div class="full"><label for="shaft">Shaft</label><input id="shaft" placeholder="Mitsubishi Diamana Blue Board 63X" /></div>
+        <div class="full"><label for="shaft">Shaft</label><input id="shaft" placeholder="Mitsubishi Diamana BB 63X" /></div>
         <div class="full"><label for="grip">Grip</label><input id="grip" placeholder="Golf Pride CP2 Pro - Red Cap - Standard" /><div class="format-hint">Saved as: Model · Color/Cap · Size. Red Cap = CP2 Pro; Blue Cap = CP2 Wrap.</div></div>
         <div class="full"><label for="notes">Notes</label><textarea id="notes" rows="3" placeholder="Finish, special edition, standard length, etc."></textarea></div>
       </div>
@@ -593,7 +593,7 @@
 <dialog id="speakDialog">
   <div class="modal-head"><h2>Speak to Add a Club</h2></div>
   <div class="modal-body">
-    <p class="speak-example">Include the location while speaking. Example: “Add to Bag 2, Ping G440 LST driver, 9 degrees, Diamana Blue Board 63 X, Golf Pride CP2 Pro red cap standard.”</p>
+    <p class="speak-example">Include the location while speaking. Example: “Add to Bag 2, Ping G440 LST driver, 9 degrees, Diamana BB 63 X, Golf Pride CP2 Pro red cap standard.”</p>
     <label for="speechText">Club description</label>
     <textarea id="speechText" placeholder="Tap Start Listening, or use the iPhone keyboard microphone to dictate here."></textarea>
     <div id="speechStatus" class="speak-status">Ready. Your description will be parsed into the Add Club form for review.</div>
@@ -649,12 +649,12 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.6';
-const RELEASED_AT = '2026-08-22T22:00:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 10:00 PM EDT';
+const APP_VERSION = '1.4.8';
+const RELEASED_AT = '2026-08-22T22:04:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 10:04 PM EDT';
 
 const STARTER_DATA = [
-  {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 1',club:'3-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'15°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 1',club:'5-Wood',brand:'Ping',model:'G440 Max',loft:'19°',shaft:'Fujikura Ventus 8 Velocore',flex:'X',grip:'Golf Pride Tour Velvet - Standard',notes:'Grip model recorded as likely Tour Velvet.'},
   {location:'Bag 1',club:'7-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'21°',shaft:'Graphite Design Tour AD VF-8',flex:'X',grip:'Golf Pride New Decade MultiCompound - Green/Black - Standard',notes:''},
@@ -666,7 +666,7 @@ const STARTER_DATA = [
   {location:'Bag 1',club:'Wedge',brand:'Cleveland',model:'RTZ Full Face ADAPT 8',loft:'58°',shaft:'Dynamic Gold Spinner Wedge Tour Issue',flex:'Wedge flex',grip:'Golf Pride Tour Velvet 360 - Standard',notes:'Shaft weight not marked.'},
   {location:'Bag 1',club:'Putter',brand:'Scotty Cameron',model:'Phantom 5.2',loft:'',shaft:'Scotty Cameron',flex:'',grip:'Scotty Cameron Design Thin Pistol',notes:''},
 
-  {location:'Bag 2',club:'Driver',brand:'Ping',model:'G430 LST',loft:'9°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
+  {location:'Bag 2',club:'Driver',brand:'Ping',model:'G430 LST',loft:'9°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 2',club:'3-Wood',brand:'Ping',model:'G440 LST',loft:'15°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 2',club:'5-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'18°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
   {location:'Bag 2',club:'7-Wood',brand:'Callaway',model:'Quantum Triple Diamond',loft:'21°',shaft:'Mitsubishi Tensei AV Blue 75',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -830,6 +830,19 @@ function normalizeModel(brand='', value='') {
   return known[key] || raw;
 }
 
+function normalizeShaftName(value='') {
+  const raw = cleanSpaces(value);
+  if (!raw) return '';
+  const key = raw.toLowerCase().replace(/[^a-z0-9]+/g,'');
+  const aliases = {
+    'mitsubishidiamanablueboard63':'Mitsubishi Diamana BB 63',
+    'diamanablueboard63':'Mitsubishi Diamana BB 63',
+    'mitsubishidiamanabb63':'Mitsubishi Diamana BB 63',
+    'diamanabb63':'Mitsubishi Diamana BB 63'
+  };
+  return aliases[key] || raw;
+}
+
 function normalizeClubRecord(club) {
   if (!club) return club;
   const brand = normalizeBrand(club.brand);
@@ -840,7 +853,7 @@ function normalizeClubRecord(club) {
     brand,
     model: normalizeModel(brand, club.model),
     loft: normalizeLoft(club.loft),
-    shaft: cleanSpaces(club.shaft),
+    shaft: normalizeShaftName(club.shaft),
     flex: normalizeFlex(club.flex),
     grip: normalizeGripValue(club.grip, gripSize, gripColor),
     notes: cleanSpaces(club.notes)
@@ -864,7 +877,7 @@ const EQUIPMENT_CATALOG = {
     ['Scotty Cameron','Phantom 5.2','Putter',[]]
   ],
   shafts: [
-    'Mitsubishi Diamana Blue Board 63','Mitsubishi Diamana BB 63','Mitsubishi Tensei AV Blue 75','Mitsubishi Tensei AV Blue 75 Graphite',
+    'Mitsubishi Diamana BB 63','Mitsubishi Tensei AV Blue 75','Mitsubishi Tensei AV Blue 75 Graphite',
     'Mitsubishi Tensei 1K Black 85 Graphite','Mitsubishi Tensei 1K Black 95 Hybrid','Mitsubishi Tensei 1K Blue 75','Mitsubishi Kai’li HY 95',
     'Mitsubishi MMT 125 graphite','Mitsubishi MMT Hybrid 80','Fujikura Ventus 8 Velocore','Fujikura Ventus Blue 6 Velocore+',
     'Graphite Design Tour AD VF-8','Graphite Design Tour AD DI-105 Hybrid','Project X EvenFlow Riptide Hybrid 80',
@@ -1327,6 +1340,7 @@ function clubSortRank(item) {
   const clubNumberMatch = club.match(/(\d+(?:\.\d+)?)/);
   const clubNumber = clubNumberMatch ? parseFloat(clubNumberMatch[1]) : 99;
 
+  if (club.includes('mini driver')) return 10;
   if (club.includes('driver') && !club.includes('driving iron')) return 0;
   if (club.includes('wood')) return 100 + clubNumber;
   if (club.includes('hybrid')) return 200 + clubNumber;
