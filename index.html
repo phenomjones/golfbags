@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.2.2
-  Release date: August 22, 2026 at 9:07 PM EDT
-  Release timestamp: 2026-08-22T21:07:00-04:00
+  Version: v1.3.0
+  Release date: August 22, 2026 at 9:14 PM EDT
+  Release timestamp: 2026-08-22T21:14:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.2.2" />
-<meta name="release-date" content="2026-08-22T21:07:00-04:00" />
+<meta name="application-version" content="1.3.0" />
+<meta name="release-date" content="2026-08-22T21:14:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -422,6 +422,32 @@
     .maintenance-section { align-items: flex-start; flex-direction: column; }
   }
 
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0 16px;
+    padding: 11px 13px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fbfcfb;
+  }
+  .sync-status { color: var(--muted); font-size: 12px; line-height: 1.35; }
+  .sync-status strong { color: var(--ink); }
+  .sync-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .sync-actions button { min-height: 38px; padding: 8px 11px; }
+  .sync-ok { color: #176b45; font-weight: 800; }
+  .sync-warn { color: #9a5b00; font-weight: 800; }
+  .sync-error { color: var(--danger); font-weight: 800; }
+  .sync-settings-note { color: var(--muted); font-size: 12px; margin: 0 0 12px; }
+  .token-note { padding: 10px 12px; border-radius: 10px; background: #fff8e7; border: 1px solid #ead9a4; font-size: 12px; color: #604b13; }
+  @media (max-width: 720px) {
+    .sync-bar { align-items: flex-start; flex-direction: column; }
+    .sync-actions { width: 100%; }
+    .sync-actions button { flex: 1 1 120px; }
+  }
+
 </style>
 </head>
 <body>
@@ -429,7 +455,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.2.2 • August 22, 2026 at 9:07 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.3.0 • August 22, 2026 at 9:14 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -441,6 +467,15 @@
     <button class="secondary" id="addShaftBtn">+ Add Shaft</button>
     <button class="secondary" id="speakBtn">🎙️ Speak to Add</button>
     <button class="secondary" id="exportBtn">Export CSV</button>
+  </section>
+
+  <section class="sync-bar" aria-label="GitHub inventory sync">
+    <div class="sync-status" id="syncStatus"><strong>GitHub sync:</strong> Not configured on this browser.</div>
+    <div class="sync-actions">
+      <button type="button" class="secondary" id="pullGithubBtn">↓ Pull from GitHub</button>
+      <button type="button" class="secondary" id="pushGithubBtn">↑ Push to GitHub</button>
+      <button type="button" class="secondary" id="githubSettingsBtn">⚙ Sync Settings</button>
+    </div>
   </section>
 
   <section class="stats" aria-label="Inventory views">
@@ -481,7 +516,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.2.2 • August 22, 2026 at 9:07 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.3.0 • August 22, 2026 at 9:14 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -554,10 +589,32 @@
   </form>
 </dialog>
 
+<dialog id="githubDialog">
+  <form method="dialog" id="githubForm">
+    <div class="modal-head"><h2>GitHub Sync Settings</h2></div>
+    <div class="modal-body">
+      <p class="sync-settings-note">These settings apply only to this browser. The app syncs clubs and loose shafts through one JSON file in your GitHub repository.</p>
+      <div class="form-grid">
+        <div><label for="githubOwner">GitHub Username / Owner</label><input id="githubOwner" required placeholder="phenomjones" autocomplete="username" /></div>
+        <div><label for="githubRepo">Repository</label><input id="githubRepo" required placeholder="golfclubinventory" /></div>
+        <div><label for="githubBranch">Branch</label><input id="githubBranch" required value="main" /></div>
+        <div><label for="githubPath">Inventory File</label><input id="githubPath" required value="inventory.json" /></div>
+        <div class="full"><label for="githubToken">GitHub Personal Access Token</label><input id="githubToken" type="password" placeholder="github_pat_…" autocomplete="off" /></div>
+        <div class="full token-note">For Push, use a fine-grained GitHub token limited to this repository with <strong>Contents: Read and write</strong>. The token is stored only in this browser's local storage and is never written into index.html or inventory.json.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="cancelGithubBtn">Cancel</button>
+        <button type="button" class="danger" id="clearGithubTokenBtn">Clear Token</button>
+        <button type="submit" class="primary">Save Settings</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
 <script>
-const APP_VERSION = '1.2.1';
-const RELEASED_AT = '2026-08-22T21:07:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 9:07 PM EDT';
+const APP_VERSION = '1.3.0';
+const RELEASED_AT = '2026-08-22T21:14:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 9:14 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -597,6 +654,9 @@ const STARTER_DATA = [
 
 const STORAGE_KEY = 'golfClubInventoryV1';
 const SHAFT_STORAGE_KEY = 'golfShaftInventoryV1';
+const LOCAL_MODIFIED_KEY = 'golfInventoryLocalModifiedV1';
+const GITHUB_SETTINGS_KEY = 'golfInventoryGithubSettingsV1';
+const GITHUB_LAST_REMOTE_KEY = 'golfInventoryGithubLastRemoteV1';
 let clubs = loadData();
 let shafts = loadShaftData();
 let activeLocation = 'All';
@@ -688,8 +748,15 @@ function loadData() {
   }
 }
 
+function markLocalModified() {
+  const now = new Date().toISOString();
+  safeStorageSet(LOCAL_MODIFIED_KEY, now);
+  return now;
+}
 function saveData() {
-  return safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
+  const ok = safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
+  markLocalModified();
+  return ok;
 }
 function loadShaftData() {
   const saved = safeStorageGet(SHAFT_STORAGE_KEY);
@@ -702,8 +769,201 @@ function loadShaftData() {
     return [];
   }
 }
-function saveShaftData() { return safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts)); }
+function saveShaftData() { const ok = safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts)); markLocalModified(); return ok; }
 function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
+function inferGithubSettings() {
+  const host = window.location.hostname || '';
+  const pathParts = (window.location.pathname || '').split('/').filter(Boolean);
+  if (host.endsWith('.github.io')) {
+    return { owner: host.split('.')[0], repo: pathParts[0] || '', branch: 'main', path: 'inventory.json', token: '' };
+  }
+  return { owner: '', repo: '', branch: 'main', path: 'inventory.json', token: '' };
+}
+
+function loadGithubSettings() {
+  const defaults = inferGithubSettings();
+  const saved = safeStorageGet(GITHUB_SETTINGS_KEY);
+  if (!saved) return defaults;
+  try { return { ...defaults, ...JSON.parse(saved) }; } catch { return defaults; }
+}
+
+function saveGithubSettings(settings) {
+  return safeStorageSet(GITHUB_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function githubConfigured(settings=loadGithubSettings(), requireToken=false) {
+  return Boolean(settings.owner && settings.repo && settings.branch && settings.path && (!requireToken || settings.token));
+}
+
+function githubHeaders(settings, includeJson=false) {
+  const headers = { 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
+  if (settings.token) headers['Authorization'] = `Bearer ${settings.token}`;
+  if (includeJson) headers['Content-Type'] = 'application/json';
+  return headers;
+}
+
+function githubContentsUrl(settings) {
+  const owner = encodeURIComponent(settings.owner.trim());
+  const repo = encodeURIComponent(settings.repo.trim());
+  const path = settings.path.split('/').filter(Boolean).map(encodeURIComponent).join('/');
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(settings.branch.trim())}`;
+}
+
+function decodeBase64Utf8(value='') {
+  const binary = atob(value.replace(/\n/g, ''));
+  const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function encodeBase64Utf8(value='') {
+  const bytes = new TextEncoder().encode(value);
+  let binary = '';
+  bytes.forEach(byte => binary += String.fromCharCode(byte));
+  return btoa(binary);
+}
+
+async function fetchRemoteInventory(settings) {
+  const response = await fetch(githubContentsUrl(settings), { headers: githubHeaders(settings) });
+  if (response.status === 404) return { exists: false, sha: null, data: null };
+  if (!response.ok) {
+    let message = `GitHub returned ${response.status}.`;
+    try { const detail = await response.json(); if (detail?.message) message += ` ${detail.message}`; } catch {}
+    throw new Error(message);
+  }
+  const file = await response.json();
+  const raw = decodeBase64Utf8(file.content || '');
+  let data;
+  try { data = JSON.parse(raw); } catch { throw new Error('inventory.json exists but is not valid JSON.'); }
+  return { exists: true, sha: file.sha, data };
+}
+
+function validateRemoteInventory(data) {
+  if (!data || !Array.isArray(data.clubs) || !Array.isArray(data.shafts)) {
+    throw new Error('The GitHub inventory file is missing clubs or shafts data.');
+  }
+  return {
+    clubs: data.clubs.filter(x => x && typeof x === 'object').map(normalizeGrip),
+    shafts: data.shafts.filter(x => x && typeof x === 'object'),
+    updatedAt: data.updatedAt || null,
+    appVersion: data.appVersion || null
+  };
+}
+
+function formatSyncDate(value) {
+  if (!value) return 'Never';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString(undefined, { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' });
+}
+
+function setSyncStatus(message, type='') {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.innerHTML = `<strong>GitHub sync:</strong> <span class="${type ? `sync-${type}` : ''}">${esc(message)}</span>`;
+}
+
+function refreshSyncStatus() {
+  const settings = loadGithubSettings();
+  if (!githubConfigured(settings)) { setSyncStatus('Not configured on this browser.'); return; }
+  const lastRemote = safeStorageGet(GITHUB_LAST_REMOTE_KEY);
+  const localModified = safeStorageGet(LOCAL_MODIFIED_KEY);
+  const tokenState = settings.token ? 'token saved' : 'pull only until a token is added';
+  setSyncStatus(`${settings.owner}/${settings.repo} • ${settings.path} • ${tokenState} • Last GitHub sync: ${formatSyncDate(lastRemote)} • Local changed: ${formatSyncDate(localModified)}`);
+}
+
+function openGithubSettings() {
+  const settings = loadGithubSettings();
+  document.getElementById('githubOwner').value = settings.owner || '';
+  document.getElementById('githubRepo').value = settings.repo || '';
+  document.getElementById('githubBranch').value = settings.branch || 'main';
+  document.getElementById('githubPath').value = settings.path || 'inventory.json';
+  document.getElementById('githubToken').value = settings.token || '';
+  document.getElementById('githubDialog').showModal();
+}
+
+async function pullFromGithub() {
+  const settings = loadGithubSettings();
+  if (!githubConfigured(settings)) { openGithubSettings(); return; }
+  setSyncStatus('Pulling from GitHub…', 'warn');
+  try {
+    const remote = await fetchRemoteInventory(settings);
+    if (!remote.exists) { setSyncStatus('No inventory.json exists in GitHub yet. Push this device first.', 'warn'); return; }
+    const parsed = validateRemoteInventory(remote.data);
+    const localModified = safeStorageGet(LOCAL_MODIFIED_KEY);
+    const lastRemote = safeStorageGet(GITHUB_LAST_REMOTE_KEY);
+    const localChangedSinceSync = localModified && (!lastRemote || new Date(localModified) > new Date(lastRemote));
+    if (localChangedSinceSync) {
+      const ok = confirm(`This browser has local changes made after its last GitHub sync. Pulling will replace them with the GitHub copy from ${formatSyncDate(parsed.updatedAt)}. Continue?`);
+      if (!ok) { refreshSyncStatus(); return; }
+    }
+    clubs = parsed.clubs;
+    shafts = parsed.shafts;
+    safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
+    safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts));
+    const remoteTime = parsed.updatedAt || new Date().toISOString();
+    safeStorageSet(GITHUB_LAST_REMOTE_KEY, remoteTime);
+    safeStorageSet(LOCAL_MODIFIED_KEY, remoteTime);
+    render();
+    setSyncStatus(`Pulled ${clubs.length} clubs and ${shafts.length} shafts from GitHub • ${formatSyncDate(remoteTime)}`, 'ok');
+  } catch (error) {
+    console.error(error);
+    setSyncStatus(error.message || 'Pull failed.', 'error');
+    alert(`GitHub pull failed: ${error.message || error}`);
+  }
+}
+
+async function pushToGithub() {
+  const settings = loadGithubSettings();
+  if (!githubConfigured(settings, true)) { openGithubSettings(); return; }
+  setSyncStatus('Checking GitHub before push…', 'warn');
+  try {
+    const remote = await fetchRemoteInventory(settings);
+    const lastKnownRemote = safeStorageGet(GITHUB_LAST_REMOTE_KEY);
+    if (remote.exists) {
+      const remoteParsed = validateRemoteInventory(remote.data);
+      const remoteUpdated = remoteParsed.updatedAt;
+      if (remoteUpdated && lastKnownRemote && remoteUpdated !== lastKnownRemote && new Date(remoteUpdated) > new Date(lastKnownRemote)) {
+        const force = confirm(`GitHub has a newer inventory (${formatSyncDate(remoteUpdated)}) than this browser last synced. Pushing now could overwrite changes from another device.
+
+Cancel to Pull first.
+
+OK only if you intentionally want to overwrite the GitHub copy.`);
+        if (!force) { refreshSyncStatus(); return; }
+      } else if (remoteUpdated && !lastKnownRemote) {
+        const force = confirm(`An inventory already exists on GitHub from ${formatSyncDate(remoteUpdated)}, but this browser has never synced with it.
+
+Cancel to Pull first.
+
+OK only if this browser should replace the GitHub copy.`);
+        if (!force) { refreshSyncStatus(); return; }
+      }
+    }
+    const updatedAt = new Date().toISOString();
+    const payload = { schemaVersion: 1, appVersion: APP_VERSION, updatedAt, clubs, shafts };
+    const apiUrl = githubContentsUrl(settings).replace(/\?ref=.*$/, '');
+    const body = {
+      message: `Update golf inventory ${updatedAt}`,
+      content: encodeBase64Utf8(JSON.stringify(payload, null, 2)),
+      branch: settings.branch
+    };
+    if (remote.sha) body.sha = remote.sha;
+    const response = await fetch(apiUrl, { method:'PUT', headers:githubHeaders(settings, true), body:JSON.stringify(body) });
+    if (!response.ok) {
+      let message = `GitHub returned ${response.status}.`;
+      try { const detail = await response.json(); if (detail?.message) message += ` ${detail.message}`; } catch {}
+      throw new Error(message);
+    }
+    safeStorageSet(GITHUB_LAST_REMOTE_KEY, updatedAt);
+    safeStorageSet(LOCAL_MODIFIED_KEY, updatedAt);
+    setSyncStatus(`Pushed ${clubs.length} clubs and ${shafts.length} shafts to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
+  } catch (error) {
+    console.error(error);
+    setSyncStatus(error.message || 'Push failed.', 'error');
+    alert(`GitHub push failed: ${error.message || error}`);
+  }
+}
+
 
 const body = document.getElementById('inventoryBody');
 const search = document.getElementById('search');
@@ -1336,9 +1596,37 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
 });
 
+const githubDialog = document.getElementById('githubDialog');
+const githubForm = document.getElementById('githubForm');
+document.getElementById('githubSettingsBtn').addEventListener('click', openGithubSettings);
+document.getElementById('pullGithubBtn').addEventListener('click', pullFromGithub);
+document.getElementById('pushGithubBtn').addEventListener('click', pushToGithub);
+document.getElementById('cancelGithubBtn').addEventListener('click', () => githubDialog.close());
+document.getElementById('clearGithubTokenBtn').addEventListener('click', () => {
+  document.getElementById('githubToken').value = '';
+  const settings = loadGithubSettings();
+  settings.token = '';
+  saveGithubSettings(settings);
+  refreshSyncStatus();
+});
+githubForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const settings = {
+    owner: document.getElementById('githubOwner').value.trim(),
+    repo: document.getElementById('githubRepo').value.trim(),
+    branch: document.getElementById('githubBranch').value.trim() || 'main',
+    path: document.getElementById('githubPath').value.trim() || 'inventory.json',
+    token: document.getElementById('githubToken').value.trim()
+  };
+  saveGithubSettings(settings);
+  githubDialog.close();
+  refreshSyncStatus();
+});
+
 document.getElementById('releaseBadge').textContent = `Version ${APP_VERSION} • ${RELEASED_DISPLAY}`;
 document.getElementById('releaseFooter').textContent = `Version ${APP_VERSION} • ${RELEASED_DISPLAY}`;
 
+refreshSyncStatus();
 render();
 </script>
 </body>
