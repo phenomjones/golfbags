@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "appVersion": "1.4.0",
-  "updatedAt": "2026-08-23T01:43:35.214Z",
+  "appVersion": "1.4.4",
+  "updatedAt": "2026-08-23T01:54:25.780Z",
   "clubs": [
     {
       "id": "47e15296-3d56-4e04-ba05-0989c3bec7df",
@@ -470,6 +470,30 @@
       "flex": "X",
       "grip": "Golf Pride CP2 Pro - Red Cap - Standard",
       "notes": "bought August 2027, traded In Srixon and Mizuno Iron sets for it"
+    },
+    {
+      "id": "16cb91aa-ab75-4cd8-9dc7-980633aca955",
+      "location": "Bag 1",
+      "club": "Mini Driver",
+      "brand": "Callaway",
+      "model": "Quantum",
+      "loft": "13.5°",
+      "shaft": "Mitsubishi Tensei AV Blue 75 Graphite",
+      "flex": "X",
+      "grip": "Golf Pride CP2 Pro - Red Cap - Standard",
+      "notes": "8/1/26 - Callaway tradein"
+    },
+    {
+      "id": "6df95338-4c1b-4251-8456-fa579e02fb21",
+      "location": "Bag 1",
+      "club": "5-Hybrid",
+      "brand": "Callaway",
+      "model": "Quantum Max",
+      "loft": "24°",
+      "shaft": "Mitsubishi MMT 80 HB",
+      "flex": "X",
+      "grip": "Golf Pride CP2 Wrap - Blue Cap - Standard",
+      "notes": "Callaway Tradein for Srixon and Mizuno 8/26"
     }
   ],
   "shafts": []
