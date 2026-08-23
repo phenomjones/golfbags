@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.1
-  Release date: August 22, 2026 at 9:41 PM EDT
-  Release timestamp: 2026-08-22T21:41:00-04:00
+  Version: v1.4.2
+  Release date: August 22, 2026 at 9:46 PM EDT
+  Release timestamp: 2026-08-22T21:46:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.1" />
-<meta name="release-date" content="2026-08-22T21:41:00-04:00" />
+<meta name="application-version" content="1.4.2" />
+<meta name="release-date" content="2026-08-22T21:46:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -487,7 +487,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.1 • August 22, 2026 at 9:41 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.2 • August 22, 2026 at 9:46 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -548,7 +548,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.1 • August 22, 2026 at 9:41 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.2 • August 22, 2026 at 9:46 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -649,9 +649,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.0';
-const RELEASED_AT = '2026-08-22T21:41:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 9:41 PM EDT';
+const APP_VERSION = '1.4.2';
+const RELEASED_AT = '2026-08-22T21:46:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 9:46 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -863,6 +863,13 @@ const EQUIPMENT_CATALOG = {
   grips: ['Golf Pride CP2 Pro','Golf Pride CP2 Wrap','Golf Pride Tour Velvet','Golf Pride Tour Velvet 360','Golf Pride Tour Velvet Plus4','Golf Pride New Decade MultiCompound','Golf Pride MCC Plus','Golf Pride Z-Grip','Scotty Cameron Design Thin Pistol']
 };
 
+const CLUB_TYPE_CATALOG = [
+  'Driver','Mini Driver','2-Wood','3-Wood','4-Wood','5-Wood','7-Wood','9-Wood','11-Wood',
+  '2-Hybrid','3-Hybrid','4-Hybrid','5-Hybrid','6-Hybrid','7-Hybrid',
+  'Driving Iron / 2-Iron','Driving Iron / 3-Iron','2-Iron','3-Iron','4-Iron','5-Iron','6-Iron','7-Iron','8-Iron','9-Iron',
+  'Pitching Wedge','Gap Wedge','Approach Wedge','Wedge','Putter'
+];
+
 function validationKey(value='') { return cleanSpaces(value).toLowerCase().replace(/[^a-z0-9]+/g,''); }
 function catalogIncludes(list, value) { const key=validationKey(value); return list.some(x=>validationKey(x)===key); }
 function gripModelFromValue(grip='') { return cleanSpaces(grip).split(/\s+-\s+/)[0] || ''; }
@@ -925,6 +932,17 @@ function validateClubRecord(record) {
     add('unknown','Manufacturer',`${item.brand || 'Blank'} is not in the local catalog`, match ? {field:'brand', value:match.value, label:`Did you mean ${match.value}?`} : null);
   }
 
+  // Validate the club name independently so typos such as "Drover" are corrected even when
+  // the model or manufacturer is also misspelled/unrecognized.
+  const knownClubTypes = [...new Set([...CLUB_TYPE_CATALOG, ...EQUIPMENT_CATALOG.heads.map(h => h[2])])];
+  const exactClubType = knownClubTypes.find(c => validationKey(c) === validationKey(item.club));
+  if (exactClubType) {
+    add('ok','Club name',`${exactClubType} recognized`);
+  } else {
+    const clubSuggestion = bestCatalogSuggestion(item.club, knownClubTypes);
+    add('unknown','Club name',`${item.club || 'Blank'} is not a recognized club type`, clubSuggestion ? {field:'clubType', value:clubSuggestion.value, label:`Did you mean ${clubSuggestion.value}?`} : null);
+  }
+
   // For model suggestions, use the selected manufacturer's catalog when possible, but fall back to all known heads when the manufacturer itself may contain a typo.
   const recognizedBrand = EQUIPMENT_CATALOG.brands.find(b => validationKey(b) === validationKey(item.brand));
   const brandHeads = recognizedBrand
@@ -936,7 +954,7 @@ function validateClubRecord(record) {
     add('ok','Model',`${item.model} matches ${actualBrand}`);
     const clubMatches = exactModel.filter(h => validationKey(h[2]) === validationKey(item.club));
     if (clubMatches.length) {
-      add('ok','Club type',`${item.club} matches this model`);
+      add('ok','Model configuration',`${item.club} matches this model`);
       const listedLofts = [...new Set(clubMatches.flatMap(h=>h[3]))];
       if (!item.loft && listedLofts.length === 0) add('ok','Loft','No loft required');
       else if (listedLofts.includes(item.loft)) add('ok','Loft',`${item.loft} matches the catalog`);
@@ -945,7 +963,7 @@ function validateClubRecord(record) {
     } else {
       const clubOptions = [...new Set(exactModel.map(h=>h[2]))];
       const clubMatch = bestCatalogSuggestion(item.club, clubOptions);
-      add('warn','Club type',`${item.model} is recognized, but ${item.club} is not a cataloged configuration`, clubMatch ? {field:'clubType', value:clubMatch.value, label:`Did you mean ${clubMatch.value}?`} : null);
+      add('warn','Model configuration',`${item.model} is recognized, but ${item.club} is not a cataloged configuration`, clubMatch ? {field:'clubType', value:clubMatch.value, label:`Did you mean ${clubMatch.value}?`} : null);
     }
   } else {
     const modelCandidates = [...new Set(brandHeads.map(h=>h[1]))];
