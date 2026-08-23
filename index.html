@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.0
-  Release date: August 22, 2026 at 9:36 PM EDT
-  Release timestamp: 2026-08-22T21:36:00-04:00
+  Version: v1.4.1
+  Release date: August 22, 2026 at 9:41 PM EDT
+  Release timestamp: 2026-08-22T21:41:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.0" />
-<meta name="release-date" content="2026-08-22T21:36:00-04:00" />
+<meta name="application-version" content="1.4.1" />
+<meta name="release-date" content="2026-08-22T21:41:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -458,6 +458,21 @@
   }
   .validation-panel[hidden] { display: none; }
   .validation-title { font-weight: 800; margin-bottom: 8px; }
+  .validation-suggestion {
+    margin-left: 8px;
+    border: 1px solid #8dc9a7;
+    background: #eefaf3;
+    color: #14532d;
+    border-radius: 999px;
+    padding: 5px 9px;
+    min-height: 30px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .validation-suggestion:hover { background: #dcf5e6; }
+  .validation-item { align-items: center; flex-wrap: wrap; }
   .validation-list { display: grid; gap: 6px; }
   .validation-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
   .validation-ok { color: #166534; }
@@ -472,7 +487,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.0 • August 22, 2026 at 9:36 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.1 • August 22, 2026 at 9:41 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -533,7 +548,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.0 • August 22, 2026 at 9:36 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.1 • August 22, 2026 at 9:41 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -635,8 +650,8 @@
 
 <script>
 const APP_VERSION = '1.4.0';
-const RELEASED_AT = '2026-08-22T21:36:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 9:36 PM EDT';
+const RELEASED_AT = '2026-08-22T21:41:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 9:41 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -852,44 +867,116 @@ function validationKey(value='') { return cleanSpaces(value).toLowerCase().repla
 function catalogIncludes(list, value) { const key=validationKey(value); return list.some(x=>validationKey(x)===key); }
 function gripModelFromValue(grip='') { return cleanSpaces(grip).split(/\s+-\s+/)[0] || ''; }
 
+function levenshtein(a='', b='') {
+  const s = validationKey(a), t = validationKey(b);
+  const rows = Array.from({length: s.length + 1}, (_, i) => i);
+  for (let j = 1; j <= t.length; j++) {
+    let prev = rows[0];
+    rows[0] = j;
+    for (let i = 1; i <= s.length; i++) {
+      const temp = rows[i];
+      rows[i] = Math.min(
+        rows[i] + 1,
+        rows[i - 1] + 1,
+        prev + (s[i - 1] === t[j - 1] ? 0 : 1)
+      );
+      prev = temp;
+    }
+  }
+  return rows[s.length];
+}
+
+function bestCatalogSuggestion(value, candidates=[]) {
+  const input = validationKey(value);
+  if (!input || !candidates.length) return null;
+  let best = null;
+  for (const candidate of [...new Set(candidates.filter(Boolean))]) {
+    const candidateKey = validationKey(candidate);
+    if (!candidateKey || candidateKey === input) continue;
+    const distance = levenshtein(input, candidateKey);
+    const maxLen = Math.max(input.length, candidateKey.length);
+    const ratio = maxLen ? distance / maxLen : 1;
+    const prefixBoost = input.length >= 4 && (candidateKey.startsWith(input.slice(0,4)) || input.startsWith(candidateKey.slice(0,4)));
+    const acceptable = distance <= 2 || (distance <= 4 && ratio <= 0.24) || (prefixBoost && ratio <= 0.32);
+    if (!acceptable) continue;
+    const score = ratio + (prefixBoost ? -0.03 : 0);
+    if (!best || score < best.score) best = {value: candidate, distance, score};
+  }
+  return best;
+}
+
+function gripWithSuggestedModel(originalGrip='', suggestedModel='') {
+  const parts = cleanSpaces(originalGrip).split(/\s+-\s+/).filter(Boolean);
+  if (parts.length > 1) return [suggestedModel, ...parts.slice(1)].join(' - ');
+  const normalized = normalizeGripValue(originalGrip);
+  const normalizedParts = normalized.split(/\s+-\s+/).filter(Boolean);
+  return [suggestedModel, ...normalizedParts.slice(1)].join(' - ');
+}
+
 function validateClubRecord(record) {
   const item = normalizeClubRecord(record);
   const results = [];
-  const add = (status, field, message) => results.push({status, field, message});
+  const add = (status, field, message, suggestion=null) => results.push({status, field, message, suggestion});
 
-  if (catalogIncludes(EQUIPMENT_CATALOG.brands, item.brand)) add('ok','Manufacturer',`${item.brand} recognized`);
-  else add('unknown','Manufacturer',`${item.brand || 'Blank'} is not in the local catalog`);
+  if (catalogIncludes(EQUIPMENT_CATALOG.brands, item.brand)) {
+    add('ok','Manufacturer',`${item.brand} recognized`);
+  } else {
+    const match = bestCatalogSuggestion(item.brand, EQUIPMENT_CATALOG.brands);
+    add('unknown','Manufacturer',`${item.brand || 'Blank'} is not in the local catalog`, match ? {field:'brand', value:match.value, label:`Did you mean ${match.value}?`} : null);
+  }
 
-  const brandHeads = EQUIPMENT_CATALOG.heads.filter(h => validationKey(h[0]) === validationKey(item.brand));
+  // For model suggestions, use the selected manufacturer's catalog when possible, but fall back to all known heads when the manufacturer itself may contain a typo.
+  const recognizedBrand = EQUIPMENT_CATALOG.brands.find(b => validationKey(b) === validationKey(item.brand));
+  const brandHeads = recognizedBrand
+    ? EQUIPMENT_CATALOG.heads.filter(h => validationKey(h[0]) === validationKey(recognizedBrand))
+    : EQUIPMENT_CATALOG.heads;
   const exactModel = brandHeads.filter(h => validationKey(h[1]) === validationKey(item.model));
   if (exactModel.length) {
-    add('ok','Model',`${item.model} matches ${item.brand}`);
+    const actualBrand = exactModel[0][0];
+    add('ok','Model',`${item.model} matches ${actualBrand}`);
     const clubMatches = exactModel.filter(h => validationKey(h[2]) === validationKey(item.club));
     if (clubMatches.length) {
       add('ok','Club type',`${item.club} matches this model`);
       const listedLofts = [...new Set(clubMatches.flatMap(h=>h[3]))];
       if (!item.loft && listedLofts.length === 0) add('ok','Loft','No loft required');
       else if (listedLofts.includes(item.loft)) add('ok','Loft',`${item.loft} matches the catalog`);
-      else if (listedLofts.length) add('warn','Loft',`${item.loft || 'Blank'} does not match catalog loft ${listedLofts.join(' / ')}`);
+      else if (listedLofts.length) add('warn','Loft',`${item.loft || 'Blank'} does not match catalog loft ${listedLofts.join(' / ')}`, listedLofts.length === 1 ? {field:'loft', value:listedLofts[0], label:`Use ${listedLofts[0]}`} : null);
       else add('unknown','Loft',`${item.loft || 'Blank'} not catalog-checked`);
-    } else add('warn','Club type',`${item.model} is recognized, but ${item.club} is not a cataloged configuration`);
-  } else add('unknown','Model',`${item.model || 'Blank'} is not yet in the local ${item.brand || ''} catalog`);
+    } else {
+      const clubOptions = [...new Set(exactModel.map(h=>h[2]))];
+      const clubMatch = bestCatalogSuggestion(item.club, clubOptions);
+      add('warn','Club type',`${item.model} is recognized, but ${item.club} is not a cataloged configuration`, clubMatch ? {field:'clubType', value:clubMatch.value, label:`Did you mean ${clubMatch.value}?`} : null);
+    }
+  } else {
+    const modelCandidates = [...new Set(brandHeads.map(h=>h[1]))];
+    const match = bestCatalogSuggestion(item.model, modelCandidates);
+    add('unknown','Model',`${item.model || 'Blank'} is not yet in the local ${recognizedBrand || item.brand || ''} catalog`, match ? {field:'model', value:match.value, label:`Did you mean ${match.value}?`} : null);
+  }
 
-  if (!item.shaft) add('unknown','Shaft','No shaft entered');
-  else if (catalogIncludes(EQUIPMENT_CATALOG.shafts, item.shaft)) add('ok','Shaft',`${item.shaft} recognized`);
-  else add('unknown','Shaft',`${item.shaft} is not yet in the local shaft catalog`);
+  if (!item.shaft) {
+    add('unknown','Shaft','No shaft entered');
+  } else if (catalogIncludes(EQUIPMENT_CATALOG.shafts, item.shaft)) {
+    add('ok','Shaft',`${item.shaft} recognized`);
+  } else {
+    const match = bestCatalogSuggestion(item.shaft, EQUIPMENT_CATALOG.shafts);
+    add('unknown','Shaft',`${item.shaft} is not yet in the local shaft catalog`, match ? {field:'shaft', value:match.value, label:`Did you mean ${match.value}?`} : null);
+  }
 
   if (/^(X|X-Stiff|TX|Stiff|S400|Wedge Flex|6\.5 \/ X)$/i.test(item.flex || '')) add('ok','Flex',`${item.flex} uses a standard format`);
   else add('unknown','Flex',`${item.flex || 'Blank'} is not a standard saved flex format`);
 
   const gripModel = gripModelFromValue(item.grip);
-  if (!gripModel) add('unknown','Grip','No grip entered');
-  else if (catalogIncludes(EQUIPMENT_CATALOG.grips, gripModel)) add('ok','Grip',`${gripModel} recognized`);
-  else add('unknown','Grip',`${gripModel} is not yet in the local grip catalog`);
+  if (!gripModel) {
+    add('unknown','Grip','No grip entered');
+  } else if (catalogIncludes(EQUIPMENT_CATALOG.grips, gripModel)) {
+    add('ok','Grip',`${gripModel} recognized`);
+  } else {
+    const match = bestCatalogSuggestion(gripModel, EQUIPMENT_CATALOG.grips);
+    add('unknown','Grip',`${gripModel} is not yet in the local grip catalog`, match ? {field:'grip', value:gripWithSuggestedModel(item.grip, match.value), label:`Did you mean ${match.value}?`} : null);
+  }
 
   return {item, results, warnings: results.filter(r=>r.status==='warn'), unknowns: results.filter(r=>r.status==='unknown')};
 }
-
 function cloneStarterData() {
   return STARTER_DATA.map(item => normalizeClubRecord({ ...item }));
 }
@@ -1690,9 +1777,24 @@ function applyNormalizedToForm(item) {
 
 function showValidation(validation) {
   const icon = {ok:'✓', warn:'⚠', unknown:'?'};
-  validationList.innerHTML = validation.results.map(r => `<div class="validation-item validation-${r.status}"><strong>${icon[r.status]}</strong><span><strong>${esc(r.field)}:</strong> ${esc(r.message)}</span></div>`).join('');
+  validationList.innerHTML = validation.results.map(r => {
+    const suggestion = r.suggestion
+      ? `<button type="button" class="validation-suggestion" data-field="${esc(r.suggestion.field)}" data-value="${esc(r.suggestion.value)}">${esc(r.suggestion.label)}</button>`
+      : '';
+    return `<div class="validation-item validation-${r.status}"><strong>${icon[r.status]}</strong><span><strong>${esc(r.field)}:</strong> ${esc(r.message)}</span>${suggestion}</div>`;
+  }).join('');
   validationPanel.hidden = false;
 }
+
+validationList.addEventListener('click', event => {
+  const button = event.target.closest('.validation-suggestion');
+  if (!button) return;
+  const fieldId = button.dataset.field;
+  const target = document.getElementById(fieldId);
+  if (!target) return;
+  target.value = button.dataset.value || '';
+  validateCurrentForm();
+});
 
 function validateCurrentForm() {
   const id = document.getElementById('clubId').value;
