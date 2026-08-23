@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.3.0
-  Release date: August 22, 2026 at 9:14 PM EDT
-  Release timestamp: 2026-08-22T21:14:00-04:00
+  Version: v1.4.0
+  Release date: August 22, 2026 at 9:36 PM EDT
+  Release timestamp: 2026-08-22T21:36:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.3.0" />
-<meta name="release-date" content="2026-08-22T21:14:00-04:00" />
+<meta name="application-version" content="1.4.0" />
+<meta name="release-date" content="2026-08-22T21:36:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -448,6 +448,23 @@
     .sync-actions button { flex: 1 1 120px; }
   }
 
+
+  .validation-panel {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #f8faf9;
+  }
+  .validation-panel[hidden] { display: none; }
+  .validation-title { font-weight: 800; margin-bottom: 8px; }
+  .validation-list { display: grid; gap: 6px; }
+  .validation-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; }
+  .validation-ok { color: #166534; }
+  .validation-warn { color: #92400e; }
+  .validation-unknown { color: #475569; }
+  .format-hint { margin-top: 5px; color: var(--muted); font-size: 11px; }
+
 </style>
 </head>
 <body>
@@ -455,7 +472,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.3.0 • August 22, 2026 at 9:14 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.0 • August 22, 2026 at 9:36 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -516,7 +533,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.3.0 • August 22, 2026 at 9:14 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.0 • August 22, 2026 at 9:36 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -538,13 +555,18 @@
         <div><label for="clubType">Club</label><input id="clubType" required placeholder="Driver, 5-Wood, 7-Iron…" /></div>
         <div><label for="brand">Brand</label><input id="brand" placeholder="Ping" /></div>
         <div><label for="model">Model</label><input id="model" placeholder="G440 LST" /></div>
-        <div><label for="loft">Loft</label><input id="loft" placeholder="7.5°" /></div>
+        <div><label for="loft">Loft</label><input id="loft" inputmode="decimal" placeholder="7.5°" /><div class="format-hint">Numbers are saved with the ° symbol automatically.</div></div>
         <div><label for="flex">Flex</label><input id="flex" placeholder="X, Stiff, S400…" /></div>
         <div class="full"><label for="shaft">Shaft</label><input id="shaft" placeholder="Mitsubishi Diamana Blue Board 63X" /></div>
-        <div class="full"><label for="grip">Grip</label><input id="grip" placeholder="Golf Pride CP2 Pro - Red Cap - Standard" /></div>
+        <div class="full"><label for="grip">Grip</label><input id="grip" placeholder="Golf Pride CP2 Pro - Red Cap - Standard" /><div class="format-hint">Saved as: Model · Color/Cap · Size. Red Cap = CP2 Pro; Blue Cap = CP2 Wrap.</div></div>
         <div class="full"><label for="notes">Notes</label><textarea id="notes" rows="3" placeholder="Finish, special edition, standard length, etc."></textarea></div>
       </div>
+      <div class="validation-panel" id="validationPanel" hidden>
+        <div class="validation-title">Validation</div>
+        <div class="validation-list" id="validationList"></div>
+      </div>
       <div class="modal-actions">
+        <button type="button" class="secondary" id="validateBtn">✓ Validate</button>
         <button type="button" class="secondary" id="cancelBtn">Cancel</button>
         <button type="submit" class="primary">Save Club</button>
       </div>
@@ -612,9 +634,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.3.0';
-const RELEASED_AT = '2026-08-22T21:14:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 9:14 PM EDT';
+const APP_VERSION = '1.4.0';
+const RELEASED_AT = '2026-08-22T21:36:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 9:36 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -662,26 +684,214 @@ let shafts = loadShaftData();
 let activeLocation = 'All';
 let loftSortDirection = null;
 
-function normalizeGrip(club) {
-  if (!club) return club;
-  let grip = (club.grip || '').trim();
-  const size = (club.gripSize || '').trim();
-  const color = (club.gripColor || '').trim();
+function cleanSpaces(value='') {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
 
-  if (/^red-cap grip$/i.test(grip) || /red cap/i.test(color)) {
-    grip = `Golf Pride CP2 Pro - Red Cap - ${size || 'Standard'}`;
-  } else if (/^blue-cap grip$/i.test(grip) || /blue cap/i.test(color)) {
-    grip = `Golf Pride CP2 Wrap - Blue Cap - ${size || 'Standard'}`;
-  } else if (grip && (size || color) && !grip.includes(' - ')) {
-    grip = [grip, color, size].filter(Boolean).join(' - ');
+function normalizeLoft(value='') {
+  const raw = cleanSpaces(value).replace(/degrees?|deg\.?/ig, '').replace(/°/g, '').trim();
+  if (!raw) return '';
+  const match = raw.match(/-?\d+(?:\.\d+)?/);
+  return match ? `${parseFloat(match[0])}°` : cleanSpaces(value);
+}
+
+function normalizeFlex(value='') {
+  const raw = cleanSpaces(value);
+  const key = raw.toLowerCase().replace(/[\s_-]+/g, '');
+  if (!raw) return '';
+  if (key === 'x' || key === 'xflex') return 'X';
+  if (key === 'xstiff' || key === 'extrastiff') return 'X-Stiff';
+  if (key === 'tx' || key === 'tourx') return 'TX';
+  if (key === 'stiff' || key === 's' || key === 'sflex') return 'Stiff';
+  if (key === 'wedgeflex') return 'Wedge Flex';
+  if (/^s\s*400$/i.test(raw)) return 'S400';
+  if (/6\.5/.test(raw) && /x/i.test(raw)) return '6.5 / X';
+  return raw;
+}
+
+function normalizeBrand(value='') {
+  const raw = cleanSpaces(value);
+  const key = raw.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const map = {
+    ping:'Ping', callaway:'Callaway', taylormade:'TaylorMade', srixon:'Srixon',
+    cleveland:'Cleveland', titleist:'Titleist', scottycameron:'Scotty Cameron'
+  };
+  return map[key] || raw;
+}
+
+function normalizeClubType(value='') {
+  let raw = cleanSpaces(value);
+  if (!raw) return '';
+  raw = raw.replace(/\bwood\b/i, 'Wood').replace(/\bhybrid\b/i, 'Hybrid').replace(/\biron\b/i, 'Iron');
+  raw = raw.replace(/^(\d+)\s*[- ]?wood$/i, '$1-Wood');
+  raw = raw.replace(/^(\d+)\s*[- ]?hybrid$/i, '$1-Hybrid');
+  raw = raw.replace(/^(\d+)\s*[- ]?iron$/i, '$1-Iron');
+  if (/^driver$/i.test(raw)) return 'Driver';
+  if (/^mini\s*driver$/i.test(raw)) return 'Mini Driver';
+  if (/^pitching\s*wedge$/i.test(raw) || /^pw$/i.test(raw)) return 'Pitching Wedge';
+  if (/^(gap|approach)\s*wedge$/i.test(raw) || /^(gw|aw)$/i.test(raw)) return 'Gap Wedge';
+  if (/^putter$/i.test(raw)) return 'Putter';
+  if (/^wedge$/i.test(raw)) return 'Wedge';
+  return raw;
+}
+
+function normalizeGripValue(value='', legacySize='', legacyColor='') {
+  let raw = cleanSpaces(value);
+  const sizeInput = cleanSpaces(legacySize);
+  const colorInput = cleanSpaces(legacyColor);
+  if (!raw && !sizeInput && !colorInput) return '';
+
+  // Allow human-entered values without separators, especially the established CP2 cap shorthand.
+  const all = `${raw} ${colorInput} ${sizeInput}`.trim();
+  const lower = all.toLowerCase();
+  let size = /\bmid[ -]?size\b/i.test(all) ? 'Midsize' :
+             /\bjumbo\b/i.test(all) ? 'Jumbo' :
+             /\bunder[ -]?size\b/i.test(all) ? 'Undersize' :
+             /\bover[ -]?size\b/i.test(all) ? 'Oversize' :
+             /\bstandard(?:\s+(?:size|grip))?\b/i.test(all) ? 'Standard' : '';
+  let color = '';
+  if (/red\s*cap/i.test(all)) color = 'Red Cap';
+  else if (/blue\s*cap/i.test(all)) color = 'Blue Cap';
+  else if (/gold\s*\/\s*black|gold\s+and\s+black/i.test(all)) color = 'Gold/Black';
+  else if (/green\s*\/\s*black|green\s+and\s+black/i.test(all)) color = 'Green/Black';
+
+  let model = '';
+  if (/cp2\s*pro/i.test(all) || (/golf\s*pride/i.test(all) && color === 'Red Cap')) model = 'Golf Pride CP2 Pro';
+  else if (/cp2\s*wrap/i.test(all) || (/golf\s*pride/i.test(all) && color === 'Blue Cap')) model = 'Golf Pride CP2 Wrap';
+  else if (/new\s*decade\s*multi\s*compound/i.test(all)) model = 'Golf Pride New Decade MultiCompound';
+  else if (/mcc\s*plus/i.test(all)) model = 'Golf Pride MCC Plus';
+  else if (/tour\s*velvet\s*plus\s*4/i.test(all)) model = 'Golf Pride Tour Velvet Plus4';
+  else if (/tour\s*velvet\s*360/i.test(all)) model = 'Golf Pride Tour Velvet 360';
+  else if (/tour\s*velvet/i.test(all)) model = 'Golf Pride Tour Velvet';
+  else if (/\bz[ -]?grip\b/i.test(all)) model = 'Golf Pride Z-Grip';
+  else if (/scotty\s*cameron.*thin\s*pistol/i.test(all)) model = 'Scotty Cameron Design Thin Pistol';
+
+  if (!model && raw.includes(' - ')) {
+    const parts = raw.split(/\s+-\s+/).map(cleanSpaces).filter(Boolean);
+    model = parts.shift() || '';
+    parts.forEach(part => {
+      if (!size && /^(standard|midsize|jumbo|undersize|oversize)$/i.test(part)) size = normalizeGripValue('', part, '').split(' - ').pop();
+      else if (!color) color = part;
+    });
   }
+  if (!model) {
+    // Strip recognized color/size descriptors from a free-form model string.
+    model = raw
+      .replace(/\bred\s*cap\b/ig,'').replace(/\bblue\s*cap\b/ig,'')
+      .replace(/\bstandard(?:\s+(?:size|grip))?\b/ig,'').replace(/\bmid[ -]?size\b/ig,'')
+      .replace(/\bjumbo\b/ig,'').replace(/\bunder[ -]?size\b/ig,'').replace(/\bover[ -]?size\b/ig,'')
+      .replace(/\s+/g,' ').trim();
+  }
+  if (!size && model && !/Scotty Cameron/i.test(model)) size = 'Standard';
+  return [model, color, size].filter(Boolean).join(' - ');
+}
 
+function normalizeModel(brand='', value='') {
+  const raw = cleanSpaces(value);
+  if (!raw) return '';
+  const key = `${normalizeBrand(brand)}|${raw}`.toLowerCase().replace(/[^a-z0-9|]/g,'');
+  const known = {
+    'callaway|quantumtriplediamondmax':'Quantum Triple Diamond Max',
+    'callaway|quantumtriplediamond':'Quantum Triple Diamond',
+    'callaway|quantummax':'Quantum Max',
+    'callaway|2026quantummini':'2026 Quantum Mini',
+    'callaway|2026quantummax':'2026 Quantum Max',
+    'ping|g440lst':'G440 LST','ping|g440max':'G440 Max','ping|g430lst':'G430 LST','ping|idi':'iDi',
+    'srixon|zxi7':'ZXi7','srixon|zxi':'ZXi',
+    'taylormade|qi35':'Qi35','taylormade|qi4d':'Qi4D',
+    'titleist|gt280':'GT280 Mini Driver','titleist|gt280minidriver':'GT280 Mini Driver',
+    'scottycameron|phantom52':'Phantom 5.2'
+  };
+  return known[key] || raw;
+}
+
+function normalizeClubRecord(club) {
+  if (!club) return club;
+  const brand = normalizeBrand(club.brand);
   const { gripSize, gripColor, ...rest } = club;
-  return { ...rest, grip };
+  return {
+    ...rest,
+    club: normalizeClubType(club.club),
+    brand,
+    model: normalizeModel(brand, club.model),
+    loft: normalizeLoft(club.loft),
+    shaft: cleanSpaces(club.shaft),
+    flex: normalizeFlex(club.flex),
+    grip: normalizeGripValue(club.grip, gripSize, gripColor),
+    notes: cleanSpaces(club.notes)
+  };
+}
+
+const EQUIPMENT_CATALOG = {
+  brands: ['Ping','Callaway','TaylorMade','Srixon','Cleveland','Titleist','Scotty Cameron'],
+  heads: [
+    ['Ping','G440 LST','Driver',['7.5°']], ['Ping','G430 LST','Driver',['9°']],
+    ['Ping','G440 LST','3-Wood',['15°']], ['Ping','G440 Max','5-Wood',['19°']], ['Ping','iDi','Driving Iron / 3-Iron',['17°']],
+    ['Callaway','Quantum Triple Diamond Max','Driver',['9°']],
+    ['Callaway','Quantum Triple Diamond','3-Wood',['15°']], ['Callaway','Quantum Triple Diamond','5-Wood',['18°']], ['Callaway','Quantum Triple Diamond','7-Wood',['21°']],
+    ['Callaway','2026 Quantum Mini','Driver',['13.5°']], ['Callaway','2026 Quantum Max','9-Wood',['24°']], ['Callaway','Quantum Max','4-Hybrid',['21°']],
+    ['TaylorMade','Qi35','2-Hybrid',['17°']], ['TaylorMade','Qi35','3-Hybrid',['19°']], ['TaylorMade','Qi4D','2-Hybrid',['17°']],
+    ['Srixon','ZXi','5-Hybrid',['25°']],
+    ['Srixon','ZXi7','5-Iron',['25°']], ['Srixon','ZXi7','6-Iron',['28°']], ['Srixon','ZXi7','7-Iron',['32°']], ['Srixon','ZXi7','8-Iron',['36°']], ['Srixon','ZXi7','9-Iron',['41°']], ['Srixon','ZXi7','Pitching Wedge',['46°']], ['Srixon','ZXi7','Gap Wedge',['51°']],
+    ['Cleveland','RTZ Mid-10, SWAG King & Queen','Wedge',['54°']], ['Cleveland','RTZ Full Face ADAPT 8','Wedge',['58°']],
+    ['Cleveland','RTZ Tour Rack Mid-10','Wedge',['54°']], ['Cleveland','RTZ Tour Rack Full Face ADAPT 8','Wedge',['58°']], ['Cleveland','RTZ Black Satin Mid-10','Wedge',['54°']],
+    ['Titleist','GT280 Mini Driver','Mini Driver',['13°']],
+    ['Scotty Cameron','Phantom 5.2','Putter',[]]
+  ],
+  shafts: [
+    'Mitsubishi Diamana Blue Board 63','Mitsubishi Diamana BB 63','Mitsubishi Tensei AV Blue 75','Mitsubishi Tensei AV Blue 75 Graphite',
+    'Mitsubishi Tensei 1K Black 85 Graphite','Mitsubishi Tensei 1K Black 95 Hybrid','Mitsubishi Tensei 1K Blue 75','Mitsubishi Kai’li HY 95',
+    'Mitsubishi MMT 125 graphite','Mitsubishi MMT Hybrid 80','Fujikura Ventus 8 Velocore','Fujikura Ventus Blue 6 Velocore+',
+    'Graphite Design Tour AD VF-8','Graphite Design Tour AD DI-105 Hybrid','Project X EvenFlow Riptide Hybrid 80',
+    'Dynamic Gold Tour Issue S400','Dynamic Gold Tour Issue S400 steel','Dynamic Gold SWAG Issue S400','Dynamic Gold Spinner Wedge Tour Issue','Scotty Cameron'
+  ],
+  grips: ['Golf Pride CP2 Pro','Golf Pride CP2 Wrap','Golf Pride Tour Velvet','Golf Pride Tour Velvet 360','Golf Pride Tour Velvet Plus4','Golf Pride New Decade MultiCompound','Golf Pride MCC Plus','Golf Pride Z-Grip','Scotty Cameron Design Thin Pistol']
+};
+
+function validationKey(value='') { return cleanSpaces(value).toLowerCase().replace(/[^a-z0-9]+/g,''); }
+function catalogIncludes(list, value) { const key=validationKey(value); return list.some(x=>validationKey(x)===key); }
+function gripModelFromValue(grip='') { return cleanSpaces(grip).split(/\s+-\s+/)[0] || ''; }
+
+function validateClubRecord(record) {
+  const item = normalizeClubRecord(record);
+  const results = [];
+  const add = (status, field, message) => results.push({status, field, message});
+
+  if (catalogIncludes(EQUIPMENT_CATALOG.brands, item.brand)) add('ok','Manufacturer',`${item.brand} recognized`);
+  else add('unknown','Manufacturer',`${item.brand || 'Blank'} is not in the local catalog`);
+
+  const brandHeads = EQUIPMENT_CATALOG.heads.filter(h => validationKey(h[0]) === validationKey(item.brand));
+  const exactModel = brandHeads.filter(h => validationKey(h[1]) === validationKey(item.model));
+  if (exactModel.length) {
+    add('ok','Model',`${item.model} matches ${item.brand}`);
+    const clubMatches = exactModel.filter(h => validationKey(h[2]) === validationKey(item.club));
+    if (clubMatches.length) {
+      add('ok','Club type',`${item.club} matches this model`);
+      const listedLofts = [...new Set(clubMatches.flatMap(h=>h[3]))];
+      if (!item.loft && listedLofts.length === 0) add('ok','Loft','No loft required');
+      else if (listedLofts.includes(item.loft)) add('ok','Loft',`${item.loft} matches the catalog`);
+      else if (listedLofts.length) add('warn','Loft',`${item.loft || 'Blank'} does not match catalog loft ${listedLofts.join(' / ')}`);
+      else add('unknown','Loft',`${item.loft || 'Blank'} not catalog-checked`);
+    } else add('warn','Club type',`${item.model} is recognized, but ${item.club} is not a cataloged configuration`);
+  } else add('unknown','Model',`${item.model || 'Blank'} is not yet in the local ${item.brand || ''} catalog`);
+
+  if (!item.shaft) add('unknown','Shaft','No shaft entered');
+  else if (catalogIncludes(EQUIPMENT_CATALOG.shafts, item.shaft)) add('ok','Shaft',`${item.shaft} recognized`);
+  else add('unknown','Shaft',`${item.shaft} is not yet in the local shaft catalog`);
+
+  if (/^(X|X-Stiff|TX|Stiff|S400|Wedge Flex|6\.5 \/ X)$/i.test(item.flex || '')) add('ok','Flex',`${item.flex} uses a standard format`);
+  else add('unknown','Flex',`${item.flex || 'Blank'} is not a standard saved flex format`);
+
+  const gripModel = gripModelFromValue(item.grip);
+  if (!gripModel) add('unknown','Grip','No grip entered');
+  else if (catalogIncludes(EQUIPMENT_CATALOG.grips, gripModel)) add('ok','Grip',`${gripModel} recognized`);
+  else add('unknown','Grip',`${gripModel} is not yet in the local grip catalog`);
+
+  return {item, results, warnings: results.filter(r=>r.status==='warn'), unknowns: results.filter(r=>r.status==='unknown')};
 }
 
 function cloneStarterData() {
-  return STARTER_DATA.map(item => ({ ...item }));
+  return STARTER_DATA.map(item => normalizeClubRecord({ ...item }));
 }
 
 function safeStorageGet(key) {
@@ -715,7 +925,7 @@ function loadData() {
       return restored;
     }
 
-    const parsed = raw.filter(item => item && typeof item === 'object').map(normalizeGrip);
+    const parsed = raw.filter(item => item && typeof item === 'object').map(normalizeClubRecord);
     if (parsed.length === 0) return cloneStarterData();
 
     const releaseAdditions = STARTER_DATA.filter(item =>
@@ -737,7 +947,7 @@ function loadData() {
         club.club === item.club &&
         club.loft === item.loft
       );
-      if (!exists) parsed.push({ ...item });
+      if (!exists) parsed.push(normalizeClubRecord({ ...item }));
     });
 
     safeStorageSet(STORAGE_KEY, JSON.stringify(parsed));
@@ -897,7 +1107,7 @@ async function pullFromGithub() {
       const ok = confirm(`This browser has local changes made after its last GitHub sync. Pulling will replace them with the GitHub copy from ${formatSyncDate(parsed.updatedAt)}. Continue?`);
       if (!ok) { refreshSyncStatus(); return; }
     }
-    clubs = parsed.clubs;
+    clubs = parsed.clubs.map(normalizeClubRecord);
     shafts = parsed.shafts;
     safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
     safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts));
@@ -1449,6 +1659,49 @@ function parseSpeechInput() {
   openParsedClub(parsed);
 }
 
+const validationPanel = document.getElementById('validationPanel');
+const validationList = document.getElementById('validationList');
+
+function clubFormRecord(id='') {
+  return {
+    id: id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    location: document.getElementById('location').value,
+    club: document.getElementById('clubType').value.trim(),
+    brand: document.getElementById('brand').value.trim(),
+    model: document.getElementById('model').value.trim(),
+    loft: document.getElementById('loft').value.trim(),
+    shaft: document.getElementById('shaft').value.trim(),
+    flex: document.getElementById('flex').value.trim(),
+    grip: document.getElementById('grip').value.trim(),
+    notes: document.getElementById('notes').value.trim()
+  };
+}
+
+function applyNormalizedToForm(item) {
+  document.getElementById('clubType').value = item.club || '';
+  document.getElementById('brand').value = item.brand || '';
+  document.getElementById('model').value = item.model || '';
+  document.getElementById('loft').value = item.loft || '';
+  document.getElementById('shaft').value = item.shaft || '';
+  document.getElementById('flex').value = item.flex || '';
+  document.getElementById('grip').value = item.grip || '';
+  document.getElementById('notes').value = item.notes || '';
+}
+
+function showValidation(validation) {
+  const icon = {ok:'✓', warn:'⚠', unknown:'?'};
+  validationList.innerHTML = validation.results.map(r => `<div class="validation-item validation-${r.status}"><strong>${icon[r.status]}</strong><span><strong>${esc(r.field)}:</strong> ${esc(r.message)}</span></div>`).join('');
+  validationPanel.hidden = false;
+}
+
+function validateCurrentForm() {
+  const id = document.getElementById('clubId').value;
+  const validation = validateClubRecord(clubFormRecord(id));
+  applyNormalizedToForm(validation.item);
+  showValidation(validation);
+  return validation;
+}
+
 const dialog = document.getElementById('clubDialog');
 const form = document.getElementById('clubForm');
 const fields = ['clubId','location','clubType','brand','model','loft','shaft','flex','grip','notes'];
@@ -1460,6 +1713,8 @@ function openForm(club=null) {
     shaft:club.shaft, flex:club.flex, grip:club.grip, notes:club.notes
   } : {clubId:'',location:'Bag 1',clubType:'',brand:'',model:'',loft:'',shaft:'',flex:'',grip:'',notes:''};
   fields.forEach(id => document.getElementById(id).value = values[id] || '');
+  validationPanel.hidden = true;
+  validationList.innerHTML = '';
   dialog.showModal();
 }
 
@@ -1527,6 +1782,7 @@ startSpeechBtn.addEventListener('click', beginSpeech);
 stopSpeechBtn.addEventListener('click', ()=>{ if (speechRecognition) speechRecognition.stop(); });
 document.getElementById('closeSpeechBtn').addEventListener('click', ()=>{ if (speechRecognition) speechRecognition.stop(); speakDialog.close(); });
 document.getElementById('parseSpeechBtn').addEventListener('click', parseSpeechInput);
+document.getElementById('validateBtn').addEventListener('click', validateCurrentForm);
 document.getElementById('cancelBtn').addEventListener('click', ()=>dialog.close());
 search.addEventListener('input', render);
 loftSortBtn.addEventListener('click', () => {
@@ -1548,18 +1804,15 @@ document.querySelectorAll('.stat[data-location]').forEach(card => card.addEventL
 form.addEventListener('submit', e => {
   e.preventDefault();
   const id = document.getElementById('clubId').value;
-  const item = {
-    id: id || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
-    location: document.getElementById('location').value,
-    club: document.getElementById('clubType').value.trim(),
-    brand: document.getElementById('brand').value.trim(),
-    model: document.getElementById('model').value.trim(),
-    loft: document.getElementById('loft').value.trim(),
-    shaft: document.getElementById('shaft').value.trim(),
-    flex: document.getElementById('flex').value.trim(),
-    grip: document.getElementById('grip').value.trim(),
-    notes: document.getElementById('notes').value.trim()
-  };
+  const validation = validateClubRecord(clubFormRecord(id));
+  const item = validation.item;
+  applyNormalizedToForm(item);
+  showValidation(validation);
+
+  if (validation.warnings.length) {
+    const warningText = validation.warnings.map(w => `${w.field}: ${w.message}`).join('\n');
+    if (!confirm(`Validation found a possible conflict:\n\n${warningText}\n\nSave anyway?`)) return;
+  }
   if (id) clubs = clubs.map(c => c.id===id ? item : c); else clubs.push(item);
   saveData(); dialog.close(); render();
 });
