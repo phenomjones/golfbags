@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.4
-  Release date: August 22, 2026 at 9:51 PM EDT
-  Release timestamp: 2026-08-22T21:51:00-04:00
+  Version: v1.4.5
+  Release date: August 22, 2026 at 9:54 PM EDT
+  Release timestamp: 2026-08-22T21:54:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.4" />
-<meta name="release-date" content="2026-08-22T21:51:00-04:00" />
+<meta name="application-version" content="1.4.5" />
+<meta name="release-date" content="2026-08-22T21:54:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -487,7 +487,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.4 • August 22, 2026 at 9:51 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.4 • August 22, 2026 at 9:54 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -548,7 +548,7 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.4 • August 22, 2026 at 9:51 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.4 • August 22, 2026 at 9:54 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -649,9 +649,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.4';
-const RELEASED_AT = '2026-08-22T21:51:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 9:51 PM EDT';
+const APP_VERSION = '1.4.5';
+const RELEASED_AT = '2026-08-22T21:54:00-04:00';
+const RELEASED_DISPLAY = 'August 22, 2026 at 9:54 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana Blue Board 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -1128,11 +1128,13 @@ function githubHeaders(settings, includeJson=false) {
   return headers;
 }
 
-function githubContentsUrl(settings) {
+function githubContentsUrl(settings, cacheBust=false) {
   const owner = encodeURIComponent(settings.owner.trim());
   const repo = encodeURIComponent(settings.repo.trim());
   const path = settings.path.split('/').filter(Boolean).map(encodeURIComponent).join('/');
-  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(settings.branch.trim())}`;
+  const ref = encodeURIComponent(settings.branch.trim());
+  const nonce = cacheBust ? `&_=${Date.now()}` : '';
+  return `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${ref}${nonce}`;
 }
 
 function decodeBase64Utf8(value='') {
@@ -1149,7 +1151,10 @@ function encodeBase64Utf8(value='') {
 }
 
 async function fetchRemoteInventory(settings) {
-  const response = await fetch(githubContentsUrl(settings), { headers: githubHeaders(settings) });
+  const response = await fetch(githubContentsUrl(settings, true), {
+    headers: { ...githubHeaders(settings), 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+    cache: 'no-store'
+  });
   if (response.status === 404) return { exists: false, sha: null, data: null };
   if (!response.ok) {
     let message = `GitHub returned ${response.status}.`;
@@ -1267,13 +1272,28 @@ OK only if this browser should replace the GitHub copy.`);
     const updatedAt = new Date().toISOString();
     const payload = { schemaVersion: 1, appVersion: APP_VERSION, updatedAt, clubs, shafts };
     const apiUrl = githubContentsUrl(settings).replace(/\?ref=.*$/, '');
-    const body = {
-      message: `Update golf inventory ${updatedAt}`,
-      content: encodeBase64Utf8(JSON.stringify(payload, null, 2)),
-      branch: settings.branch
-    };
-    if (remote.sha) body.sha = remote.sha;
-    const response = await fetch(apiUrl, { method:'PUT', headers:githubHeaders(settings, true), body:JSON.stringify(body) });
+
+    async function putInventory(sha=null) {
+      const putBody = {
+        message: `Update golf inventory ${updatedAt}`,
+        content: encodeBase64Utf8(JSON.stringify(payload, null, 2)),
+        branch: settings.branch
+      };
+      if (sha) putBody.sha = sha;
+      return fetch(apiUrl, {
+        method:'PUT',
+        headers:githubHeaders(settings, true),
+        cache:'no-store',
+        body:JSON.stringify(putBody)
+      });
+    }
+
+    let response = await putInventory(remote.sha);
+    if (response.status === 409) {
+      setSyncStatus('GitHub changed during push. Refreshing file version and retrying…', 'warn');
+      const newestRemote = await fetchRemoteInventory(settings);
+      response = await putInventory(newestRemote.sha);
+    }
     if (!response.ok) {
       let message = `GitHub returned ${response.status}.`;
       try { const detail = await response.json(); if (detail?.message) message += ` ${detail.message}`; } catch {}
