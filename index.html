@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.12
-  Release date: October 4, 2026 at 5:46 PM EDT
-  Release timestamp: 2026-10-04T17:46:00-04:00
+  Version: v1.4.13
+  Release date: October 4, 2026 at 6:04 PM EDT
+  Release timestamp: 2026-10-04T18:04:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.12" />
-<meta name="release-date" content="2026-10-04T17:46:00-04:00" />
+<meta name="application-version" content="1.4.13" />
+<meta name="release-date" content="2026-10-04T18:04:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -489,6 +489,8 @@
   .check-progress { margin-top: 15px; display: grid; gap: 7px; }
   .check-progress strong { font-size: 16px; }
   .check-progress progress { width: 100%; height: 13px; accent-color: var(--accent); }
+  .check-latest { border-top: 1px solid var(--line); padding-top: 13px; margin-top: 6px; display: grid; gap: 5px; }
+  .check-latest details summary { cursor: pointer; font-size: 13px; font-weight: 700; }
   .check-view-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
   .check-view-tabs button[aria-pressed="true"] { background: var(--accent); color: white; border-color: var(--accent); }
   .check-report { margin-top: 13px; }
@@ -522,7 +524,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.12 • October 4, 2026 at 5:46 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.13 • October 4, 2026 at 6:04 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -553,27 +555,6 @@
     <button type="button" class="stat stat-shafts" data-location="Shafts" aria-pressed="false"><strong id="shaftCount">0</strong><span>Loose shafts</span></button>
   </section>
 
-  <section class="check-panel" aria-label="Physical inventory check">
-    <div class="check-heading">
-      <div><h2>Physical inventory check</h2><p>Confirm each club you can physically find. Your previous checks keep their original dates.</p></div>
-      <div class="check-controls"><button type="button" class="primary" id="newCheckBtn">Start new check</button><button type="button" class="secondary" id="endCheckBtn" hidden>End check and lock results</button></div>
-    </div>
-    <div class="check-progress" id="checkProgress" aria-live="polite"></div>
-    <div class="check-view-tabs" aria-label="Inventory check views">
-      <button type="button" class="secondary" id="allCheckViewBtn" aria-pressed="true">All clubs</button>
-      <button type="button" class="secondary" id="uncheckedViewBtn" aria-pressed="false">Not confirmed</button>
-      <button type="button" class="secondary" id="checkHistoryBtn" aria-pressed="false">Check history</button>
-    </div>
-    <div class="check-report" id="checkReport" hidden></div>
-    <div class="check-history" id="checkHistory" hidden></div>
-  </section>
-
-  <details class="departure-panel" id="departurePanel">
-    <summary>No longer held <span id="departureCount">(0)</span></summary>
-    <p>Clubs marked sold, traded, or otherwise no longer held are kept here with their details and notes. They are excluded from your active inventory.</p>
-    <div class="departure-list" id="departureList"></div>
-  </details>
-
   <div class="legend" id="clubLegend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--wood-bg)"></span>Fairway Woods</span>
@@ -602,9 +583,29 @@
     </table>
     <div id="shaftEmptyState" class="empty" hidden>No shafts match this view.</div>
   </div>
+  <section class="check-panel" aria-label="Physical inventory check">
+    <div class="check-heading">
+      <div><h2>Physical inventory check</h2><p>Check each club in the list above. An in-progress check is saved only when you lock it.</p></div>
+      <div class="check-controls"><button type="button" class="primary" id="newCheckBtn">Start new check</button><button type="button" class="primary" id="endCheckBtn" hidden>Lock and save check</button><button type="button" class="secondary" id="cancelCheckBtn" hidden>Cancel check</button></div>
+    </div>
+    <div class="check-progress" id="checkProgress" aria-live="polite"></div>
+    <div class="check-view-tabs" aria-label="Inventory check views">
+      <button type="button" class="secondary" id="allCheckViewBtn" aria-pressed="true">All clubs</button>
+      <button type="button" class="secondary" id="uncheckedViewBtn" aria-pressed="false">Not confirmed</button>
+      <button type="button" class="secondary" id="checkHistoryBtn" aria-expanded="false">View previous checks</button>
+    </div>
+    <div class="check-report" id="checkReport" hidden></div>
+    <div class="check-history" id="checkHistory" hidden></div>
+  </section>
+
+  <details class="departure-panel" id="departurePanel">
+    <summary>No longer held <span id="departureCount">(0)</span></summary>
+    <p>Clubs marked sold, traded, or otherwise no longer held are kept here with their details and notes. They are excluded from your active inventory.</p>
+    <div class="departure-list" id="departureList"></div>
+  </details>
   <div class="footer-note">
-    <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.12 • October 4, 2026 at 5:46 PM EDT</span>
+    <span>Club and log changes are saved automatically. Physical inventory checks are saved when locked.</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.13 • October 4, 2026 at 6:04 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
@@ -722,9 +723,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.12';
-const RELEASED_AT = '2026-10-04T17:46:00-04:00';
-const RELEASED_DISPLAY = 'October 4, 2026 at 5:46 PM EDT';
+const APP_VERSION = '1.4.13';
+const RELEASED_AT = '2026-10-04T18:04:00-04:00';
+const RELEASED_DISPLAY = 'October 4, 2026 at 6:04 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -775,6 +776,7 @@ let clubs = loadData();
 let shafts = loadShaftData();
 let checkState = loadCheckData();
 let checkView = 'all';
+let showPreviousChecks = false;
 let activeLocation = 'All';
 let loftSortDirection = null;
 
@@ -1239,7 +1241,7 @@ function saveInventoryBundle(nextClubs, nextDeparted, nextChecks, nextShafts=sha
   const updates = [
     [STORAGE_KEY, JSON.stringify(nextClubs)],
     [DEPARTED_STORAGE_KEY, JSON.stringify(nextDeparted)],
-    [CHECK_STORAGE_KEY, JSON.stringify(nextChecks)],
+    [CHECK_STORAGE_KEY, JSON.stringify(committedChecks(nextChecks))],
     [SHAFT_STORAGE_KEY, JSON.stringify(nextShafts)]
   ];
   const previous = updates.map(([key]) => [key, safeStorageGet(key)]);
@@ -1284,6 +1286,9 @@ function normalizeCheckState(raw) {
   const activeCheckId = sessions.some(session => session.id === raw.activeCheckId && !session.closedAt) ? raw.activeCheckId : null;
   return { sessions, activeCheckId };
 }
+function committedChecks(state=checkState) {
+  return { sessions: state.sessions.filter(session => Boolean(session.closedAt)), activeCheckId: null };
+}
 function loadCheckData() {
   const saved = safeStorageGet(CHECK_STORAGE_KEY);
   if (!saved) return { sessions: [], activeCheckId: null };
@@ -1294,27 +1299,12 @@ function loadCheckData() {
   }
 }
 function saveCheckData() {
-  const ok = safeStorageSet(CHECK_STORAGE_KEY, JSON.stringify(checkState));
+  const ok = safeStorageSet(CHECK_STORAGE_KEY, JSON.stringify(committedChecks()));
   if (ok) markLocalModified();
   return ok;
 }
 function currentCheck() { return checkState.sessions.find(session => session.id === checkState.activeCheckId && !session.closedAt) || null; }
-function latestCheck() { return checkState.sessions.slice().sort((a,b) => new Date(b.startedAt) - new Date(a.startedAt))[0] || null; }
-function saveCheckChange(change) {
-  const previous = structuredClone(checkState);
-  const previousView = checkView;
-  change();
-  if (!saveCheckData()) {
-    checkState = previous;
-    checkView = previousView;
-    render();
-    alert('This check could not be saved in this browser. No checkmarks were changed.');
-    return false;
-  }
-  render();
-  refreshSyncStatus();
-  return true;
-}
+function latestCheck() { return committedChecks().sessions.sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt))[0] || null; }
 function formatCheckDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
@@ -1324,10 +1314,6 @@ function addClubToCurrentCheck(club) {
   const session = currentCheck();
   if (!session || session.clubSnapshots.some(item => item.id === club.id)) return;
   session.clubSnapshots.push(clubSnapshot(club));
-  if (!saveCheckData()) {
-    session.clubSnapshots.pop();
-    alert('The new club was saved, but its check-history snapshot could not be saved in this browser.');
-  }
 }
 function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
@@ -1456,6 +1442,10 @@ async function pullFromGithub() {
     const remote = await fetchRemoteInventory(settings);
     if (!remote.exists) { setSyncStatus('No inventory.json exists in GitHub yet. Push this device first.', 'warn'); return; }
     const parsed = validateRemoteInventory(remote.data);
+    if (currentCheck() && !confirm('Pulling from GitHub will discard your in-progress physical inventory check. Continue?')) {
+      refreshSyncStatus();
+      return;
+    }
     const localModified = safeStorageGet(LOCAL_MODIFIED_KEY);
     const lastRemote = safeStorageGet(GITHUB_LAST_REMOTE_KEY);
     const localChangedSinceSync = localModified && (!lastRemote || new Date(localModified) > new Date(lastRemote));
@@ -1469,7 +1459,7 @@ async function pullFromGithub() {
     const departedIds = new Set(nextDeparted.map(entry => entry.club.id));
     const nextClubs = parsed.clubs.filter(club => !departedIds.has(club.id));
     const updates = [
-      [CHECK_STORAGE_KEY, JSON.stringify(nextChecks)],
+      [CHECK_STORAGE_KEY, JSON.stringify(committedChecks(nextChecks))],
       [DEPARTED_STORAGE_KEY, JSON.stringify(nextDeparted)],
       [SHAFT_STORAGE_KEY, JSON.stringify(parsed.shafts)],
       [STORAGE_KEY, JSON.stringify(nextClubs)]
@@ -1496,7 +1486,7 @@ async function pullFromGithub() {
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, remoteTime);
     safeStorageSet(LOCAL_MODIFIED_KEY, remoteTime);
     render();
-    setSyncStatus(`Pulled ${clubs.length} clubs, ${shafts.length} shafts, ${checkState.sessions.length} checks, and ${departedClubs.length} no-longer-held records from GitHub${parsed.checks ? '' : ' (local check history kept)'}${parsed.departedClubs ? '' : ' (local no-longer-held log kept)'} • ${formatSyncDate(remoteTime)}`, 'ok');
+    setSyncStatus(`Pulled ${clubs.length} clubs, ${shafts.length} shafts, ${committedChecks().sessions.length} locked checks, and ${departedClubs.length} no-longer-held records from GitHub${parsed.checks ? '' : ' (local check history kept)'}${parsed.departedClubs ? '' : ' (local no-longer-held log kept)'} • ${formatSyncDate(remoteTime)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Pull failed.', 'error');
@@ -1531,7 +1521,7 @@ OK only if this browser should replace the GitHub copy.`);
       }
     }
     const updatedAt = new Date().toISOString();
-    const payload = { schemaVersion: 3, appVersion: APP_VERSION, updatedAt, clubs, shafts, checks: checkState, departedClubs };
+    const payload = { schemaVersion: 3, appVersion: APP_VERSION, updatedAt, clubs, shafts, checks: committedChecks(), departedClubs };
     const apiUrl = githubContentsUrl(settings).replace(/\?ref=.*$/, '');
 
     async function putInventory(sha=null) {
@@ -1558,7 +1548,7 @@ OK only if this browser should replace the GitHub copy.`);
     }
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, updatedAt);
     safeStorageSet(LOCAL_MODIFIED_KEY, updatedAt);
-    setSyncStatus(`Pushed ${clubs.length} clubs, ${shafts.length} shafts, ${checkState.sessions.length} checks, and ${departedClubs.length} no-longer-held records to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
+    setSyncStatus(`Pushed ${clubs.length} clubs, ${shafts.length} shafts, ${committedChecks().sessions.length} locked checks, and ${departedClubs.length} no-longer-held records to GitHub${currentCheck() ? ' (unfinished check excluded)' : ''} • ${formatSyncDate(updatedAt)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Push failed.', 'error');
@@ -1804,44 +1794,55 @@ function renderShafts() {
 
 function renderCheckPanel() {
   const session = currentCheck();
-  const recent = session || latestCheck();
-  const total = session ? clubs.length : recent ? recent.clubSnapshots.length : clubs.length;
-  const confirmed = recent ? (session ? clubs : recent.clubSnapshots).filter(club => Boolean(recent.confirmations[club.id])).length : 0;
-  const remaining = total - confirmed;
+  const recent = latestCheck();
+  const total = clubs.length;
+  const confirmed = session ? clubs.filter(club => Boolean(session.confirmations[club.id])).length : 0;
+  const previous = committedChecks().sessions
+    .filter(item => item.id !== recent?.id)
+    .sort((a,b) => new Date(b.closedAt) - new Date(a.closedAt));
   const progress = document.getElementById('checkProgress');
-  progress.innerHTML = recent
-    ? `<strong>${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(recent.startedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Inventory check progress"></progress>`
-    : '<strong>No check started</strong><span class="check-meta">Start a check to confirm the clubs you have in hand.</span>';
-  if (recent && !session) progress.innerHTML = `<strong>Last check locked: ${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(recent.startedAt))} · Ended ${esc(formatCheckDate(recent.closedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Last inventory check progress"></progress>`;
+  progress.innerHTML = session
+    ? `<strong>Check in progress: ${confirmed} of ${total} clubs confirmed · ${total - confirmed} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(session.startedAt))} · This draft is not saved until you lock it.</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Inventory check progress"></progress>`
+    : '<span class="check-meta">Start a check to confirm the clubs you have in hand.</span>';
+  if (recent) {
+    const recentConfirmed = recent.clubSnapshots.filter(club => Boolean(recent.confirmations[club.id])).length;
+    const rows = recent.clubSnapshots.slice().sort(allClubsComparator).map(club => `<li>${esc(checkClubLabel(club))} — ${recent.confirmations[club.id] ? `Confirmed ${esc(formatCheckDate(recent.confirmations[club.id]))}` : 'Not confirmed'}</li>`).join('');
+    progress.innerHTML += `<div class="check-latest"><strong>Most recent locked check: ${recentConfirmed} of ${recent.clubSnapshots.length} confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(recent.startedAt))} · Locked ${esc(formatCheckDate(recent.closedAt))}</span><details><summary>View most recent results</summary><ol class="check-history-list">${rows}</ol></details></div>`;
+  }
   document.getElementById('newCheckBtn').hidden = Boolean(session);
   document.getElementById('newCheckBtn').textContent = recent ? 'Start new check' : 'Start first check';
   document.getElementById('endCheckBtn').hidden = !session;
-  [['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked'],['checkHistoryBtn','history']].forEach(([id, view]) => {
+  document.getElementById('cancelCheckBtn').hidden = !session;
+  [['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked']].forEach(([id, view]) => {
     document.getElementById(id).setAttribute('aria-pressed', String(checkView === view));
   });
+  const historyButton = document.getElementById('checkHistoryBtn');
+  historyButton.hidden = previous.length === 0;
+  historyButton.textContent = showPreviousChecks ? 'Hide previous checks' : `View previous checks (${previous.length})`;
+  historyButton.setAttribute('aria-expanded', String(showPreviousChecks && previous.length > 0));
 
   const report = document.getElementById('checkReport');
   report.hidden = checkView !== 'unchecked';
   if (checkView === 'unchecked') {
-    const missing = recent ? clubs.filter(club => !recent.confirmations[club.id]).sort(allClubsComparator) : [];
-    report.innerHTML = `<h3>Clubs not confirmed in ${session ? 'this check' : recent ? 'the last check' : 'a check'}</h3>` +
-      (recent
+    const source = session || recent;
+    const missing = source ? clubs.filter(club => !source.confirmations[club.id]).sort(allClubsComparator) : [];
+    report.innerHTML = `<h3>Clubs not confirmed in ${session ? 'this check' : recent ? 'the most recent locked check' : 'a check'}</h3>` +
+      (source
         ? `<p>${missing.length} club${missing.length === 1 ? '' : 's'} in your current inventory ${session ? 'still need' : 'were not'} confirmed. This report includes every inventory location.</p>`
         : '<p>Start a check to see which clubs have not been confirmed.</p>') +
-      (recent && missing.length
+      (source && missing.length
         ? `<ol class="check-report-list">${missing.map(club => `<li>${esc(checkClubLabel(club))}</li>`).join('')}</ol>`
-        : recent ? '<p>Every club currently in the inventory was confirmed.</p>' : '');
+        : source ? '<p>Every club currently in the inventory was confirmed.</p>' : '');
   }
 
   const history = document.getElementById('checkHistory');
-  history.hidden = checkView !== 'history';
-  if (checkView === 'history') {
-    const ordered = checkState.sessions.slice().sort((a,b) => new Date(b.startedAt) - new Date(a.startedAt));
-    history.innerHTML = '<h3>Check history</h3>' + (ordered.length ? ordered.map(item => {
+  history.hidden = !showPreviousChecks || previous.length === 0;
+  if (!history.hidden) {
+    history.innerHTML = '<h3>Previous locked checks</h3>' + previous.map(item => {
       const count = item.clubSnapshots.filter(club => item.confirmations[club.id]).length;
       const rows = item.clubSnapshots.slice().sort(allClubsComparator).map(club => `<li>${esc(checkClubLabel(club))} — ${item.confirmations[club.id] ? `Confirmed ${esc(formatCheckDate(item.confirmations[club.id]))}` : 'Not confirmed'}</li>`).join('');
-      return `<details><summary>${esc(formatCheckDate(item.startedAt))} · ${count} of ${item.clubSnapshots.length} confirmed · ${item.closedAt ? 'Locked' : 'Current'}</summary><small>${item.closedAt ? `Ended ${esc(formatCheckDate(item.closedAt))}` : 'Check in progress'}. Club details reflect the inventory when this check was made.</small><ol class="check-history-list">${rows}</ol></details>`;
-    }).join('') : '<p>No checks have been recorded yet.</p>');
+      return `<details><summary>${esc(formatCheckDate(item.startedAt))} · ${count} of ${item.clubSnapshots.length} confirmed</summary><small>Locked ${esc(formatCheckDate(item.closedAt))}. Club details reflect the inventory when this check was made.</small><ol class="check-history-list">${rows}</ol></details>`;
+    }).join('');
   }
 }
 
@@ -2277,25 +2278,47 @@ departureForm.addEventListener('submit', event => {
 
 document.getElementById('newCheckBtn').addEventListener('click', () => {
   if (currentCheck()) return;
-  saveCheckChange(() => {
-    const now = new Date().toISOString();
-    const next = { id: newId(), startedAt: now, closedAt: null, clubSnapshots: clubs.map(clubSnapshot), confirmations: {} };
-    checkState.sessions.push(next);
-    checkState.activeCheckId = next.id;
-    checkView = 'all';
-  });
+  const next = { id: newId(), startedAt: new Date().toISOString(), closedAt: null, clubSnapshots: clubs.map(clubSnapshot), confirmations: {} };
+  checkState.sessions.push(next);
+  checkState.activeCheckId = next.id;
+  checkView = 'all';
+  render();
 });
 document.getElementById('endCheckBtn').addEventListener('click', () => {
   const existing = currentCheck();
   if (!existing) return;
   const confirmed = clubs.filter(club => existing.confirmations[club.id]).length;
-  if (!confirm(`End and lock this inventory check? ${confirmed} of ${clubs.length} clubs are confirmed. You will not be able to change its checkmarks afterward.`)) return;
-  saveCheckChange(() => {
-    existing.closedAt = new Date().toISOString();
-    existing.clubSnapshots = clubs.map(clubSnapshot);
-    checkState.activeCheckId = null;
-    checkView = 'history';
-  });
+  if (!confirm(`Lock and save this inventory check? ${confirmed} of ${clubs.length} clubs are confirmed. The saved results cannot be edited afterward.`)) return;
+  const previous = structuredClone(checkState);
+  existing.closedAt = new Date().toISOString();
+  existing.clubSnapshots = clubs.map(clubSnapshot);
+  checkState.activeCheckId = null;
+  if (!saveCheckData()) {
+    checkState = previous;
+    alert('This check could not be saved. It is still in progress; please try locking it again.');
+    render();
+    return;
+  }
+  checkView = 'all';
+  showPreviousChecks = false;
+  render();
+  refreshSyncStatus();
+});
+document.getElementById('cancelCheckBtn').addEventListener('click', () => {
+  const existing = currentCheck();
+  if (!existing || !confirm('Cancel this inventory check? All checkmarks in this unfinished check will be discarded.')) return;
+  const previous = structuredClone(checkState);
+  checkState.sessions = checkState.sessions.filter(item => item.id !== existing.id);
+  checkState.activeCheckId = null;
+  if (!saveCheckData()) {
+    checkState = previous;
+    alert('This check could not be canceled in browser storage. Please try again.');
+    render();
+    return;
+  }
+  checkView = 'all';
+  render();
+  refreshSyncStatus();
 });
 body.addEventListener('change', event => {
   const input = event.target.closest('input[data-check-id]');
@@ -2303,12 +2326,11 @@ body.addEventListener('change', event => {
   const session = currentCheck();
   const club = clubs.find(item => item.id === input.dataset.checkId);
   if (!session || !club) { render(); return; }
-  saveCheckChange(() => {
-    if (input.checked) session.confirmations[club.id] = new Date().toISOString();
-    else delete session.confirmations[club.id];
-  });
+  if (input.checked) session.confirmations[club.id] = new Date().toISOString();
+  else delete session.confirmations[club.id];
+  render();
 });
-[['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked'],['checkHistoryBtn','history']].forEach(([id, view]) => {
+[['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked']].forEach(([id, view]) => {
   document.getElementById(id).addEventListener('click', () => {
     checkView = view;
     if (view === 'unchecked') {
@@ -2321,6 +2343,10 @@ body.addEventListener('change', event => {
     }
     render();
   });
+});
+document.getElementById('checkHistoryBtn').addEventListener('click', () => {
+  showPreviousChecks = !showPreviousChecks;
+  renderCheckPanel();
 });
 
 const shaftDialog = document.getElementById('shaftDialog');
