@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "appVersion": "1.4.6",
-  "updatedAt": "2026-08-23T02:03:13.771Z",
+  "schemaVersion": 2,
+  "appVersion": "1.4.9",
+  "updatedAt": "2026-10-04T20:29:59.905Z",
   "clubs": [
     {
       "id": "47e15296-3d56-4e04-ba05-0989c3bec7df",
@@ -10,7 +10,7 @@
       "brand": "Ping",
       "model": "G440 LST",
       "loft": "7.5°",
-      "shaft": "Mitsubishi Diamana Blue Board 63",
+      "shaft": "Mitsubishi Diamana BB 63",
       "flex": "X",
       "grip": "Golf Pride CP2 Pro - Red Cap - Standard",
       "notes": ""
@@ -178,7 +178,7 @@
       "brand": "Ping",
       "model": "G430 LST",
       "loft": "9°",
-      "shaft": "Mitsubishi Diamana Blue Board 63",
+      "shaft": "Mitsubishi Diamana BB 63",
       "flex": "X",
       "grip": "Golf Pride CP2 Pro - Red Cap - Standard",
       "notes": ""
@@ -496,5 +496,682 @@
       "notes": "Callaway Tradein for Srixon and Mizuno 8/26"
     }
   ],
-  "shafts": []
+  "shafts": [],
+  "checks": {
+    "sessions": [
+      {
+        "id": "fe000f98-5ae1-4c7c-964e-2287c98225ea",
+        "startedAt": "2026-10-04T20:16:28.751Z",
+        "closedAt": "2026-10-04T20:16:33.296Z",
+        "clubSnapshots": [
+          {
+            "id": "47e15296-3d56-4e04-ba05-0989c3bec7df",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Ping",
+            "model": "G440 LST",
+            "loft": "7.5°"
+          },
+          {
+            "id": "617f45ea-3b93-4765-bfaa-a78de2760c46",
+            "location": "Spare Clubs",
+            "club": "3-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "15°"
+          },
+          {
+            "id": "acefbd8a-11c7-4a43-99a6-f7cc1c3d04b3",
+            "location": "Bag 1",
+            "club": "5-Wood",
+            "brand": "Ping",
+            "model": "G440 Max",
+            "loft": "19°"
+          },
+          {
+            "id": "b8c46e52-f57d-4272-8247-e6f251c9fbe9",
+            "location": "Bag 1",
+            "club": "7-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "21°"
+          },
+          {
+            "id": "590c79ed-2be8-4991-b32d-ac0ec28c38dc",
+            "location": "Spare Clubs",
+            "club": "5-Hybrid",
+            "brand": "Srixon",
+            "model": "ZXi",
+            "loft": "25°"
+          },
+          {
+            "id": "c42c6bb5-64ee-44cf-a329-85ffd4023b25",
+            "location": "Bag 1",
+            "club": "6-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "28°"
+          },
+          {
+            "id": "07eb36aa-a6a6-4760-9eb7-b23330a920a1",
+            "location": "Bag 1",
+            "club": "7-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "32°"
+          },
+          {
+            "id": "9941c25b-45db-4970-b5d9-bce00fb95502",
+            "location": "Bag 1",
+            "club": "8-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "36°"
+          },
+          {
+            "id": "3c5f6f88-87fa-44a9-ab65-86c21ed103b6",
+            "location": "Bag 1",
+            "club": "9-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "41°"
+          },
+          {
+            "id": "1cc36719-a0f6-4d07-b18a-e653cad1b47a",
+            "location": "Bag 1",
+            "club": "Pitching Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "46°"
+          },
+          {
+            "id": "af248c31-4dfb-417e-aae1-25d5b3463a32",
+            "location": "Bag 1",
+            "club": "Gap Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "51°"
+          },
+          {
+            "id": "72e17946-14a8-4448-bee5-606715797d6d",
+            "location": "Bag 1",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Mid-10, SWAG King & Queen",
+            "loft": "54°"
+          },
+          {
+            "id": "9b4f0298-5c18-4be7-9290-a02d4eed71e2",
+            "location": "Bag 1",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Full Face ADAPT 8",
+            "loft": "58°"
+          },
+          {
+            "id": "911741db-eef1-4a71-9b5d-793b928d2cc8",
+            "location": "Bag 1",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "e60cd917-0e7d-4276-a1d6-36f9e6507ecc",
+            "location": "Bag 2",
+            "club": "Driver",
+            "brand": "Ping",
+            "model": "G430 LST",
+            "loft": "9°"
+          },
+          {
+            "id": "0724bace-50dc-4dd8-bf02-05bbba1c4d5d",
+            "location": "Bag 2",
+            "club": "3-Wood",
+            "brand": "Ping",
+            "model": "G440 LST",
+            "loft": "15°"
+          },
+          {
+            "id": "078ec0f6-3c9f-47bd-81c4-e9bcf4474a13",
+            "location": "Bag 2",
+            "club": "5-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "18°"
+          },
+          {
+            "id": "08df8aaf-f14d-4e52-aeed-87e5737873f7",
+            "location": "Bag 2",
+            "club": "7-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "21°"
+          },
+          {
+            "id": "29c56796-e918-4952-81f5-09c9a5a4a6cc",
+            "location": "Spare Clubs",
+            "club": "2-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi4D",
+            "loft": "17°"
+          },
+          {
+            "id": "57576129-1da8-4c42-a1bf-d9f78752de96",
+            "location": "Bag 2",
+            "club": "5-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "25°"
+          },
+          {
+            "id": "72e61897-cec5-4269-b2ee-a1bd37cdbf56",
+            "location": "Bag 2",
+            "club": "6-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "28°"
+          },
+          {
+            "id": "223fedcb-6ab5-4c95-adfb-06520d2a9632",
+            "location": "Bag 2",
+            "club": "7-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "32°"
+          },
+          {
+            "id": "8800aacd-ae67-42b2-816b-e4d37d5f0db8",
+            "location": "Bag 2",
+            "club": "8-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "36°"
+          },
+          {
+            "id": "28da243f-6534-4bd4-b393-ea107502f41a",
+            "location": "Bag 2",
+            "club": "9-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "41°"
+          },
+          {
+            "id": "7f8c211c-0b7e-499a-be19-4adf4fe5cb25",
+            "location": "Bag 2",
+            "club": "Pitching Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "46°"
+          },
+          {
+            "id": "ff601023-2c80-41bf-8b33-26854f99a99d",
+            "location": "Bag 2",
+            "club": "Gap Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "51°"
+          },
+          {
+            "id": "24e2a8c0-9986-4cb3-8b54-5d2335431f52",
+            "location": "Bag 2",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Tour Rack Mid-10",
+            "loft": "54°"
+          },
+          {
+            "id": "9c83bd3e-3929-4ffa-a2e3-2a8b1cd0980e",
+            "location": "Bag 2",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Tour Rack Full Face ADAPT 8",
+            "loft": "58°"
+          },
+          {
+            "id": "a82f69c0-bb67-4462-806c-7a5350ede2ce",
+            "location": "Bag 2",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "5f9a0a51-d6d4-4259-8400-2ceb2acc0f29",
+            "location": "Spare Clubs",
+            "club": "2-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi35",
+            "loft": "17°"
+          },
+          {
+            "id": "6cd893aa-3708-4463-b5e3-007154453285",
+            "location": "Spare Clubs",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Black Satin Mid-10",
+            "loft": "54°"
+          },
+          {
+            "id": "1cef970a-da90-4271-bed8-5bedd012ab2c",
+            "location": "Spare Clubs",
+            "club": "Driving Iron / 3-Iron",
+            "brand": "Ping",
+            "model": "iDi",
+            "loft": "17°"
+          },
+          {
+            "id": "fd5415fd-54e6-472d-bf21-a8a03d55a254",
+            "location": "Spare Clubs",
+            "club": "3-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi35",
+            "loft": "19°"
+          },
+          {
+            "id": "9f93810a-bc9a-469d-9c78-a1762e989fbe",
+            "location": "Spare Clubs",
+            "club": "4-Hybrid",
+            "brand": "Callaway",
+            "model": "Quantum Max",
+            "loft": "21°"
+          },
+          {
+            "id": "1f0bd345-302a-459c-a448-344bb20da19f",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Callaway",
+            "model": "2026 Quantum Mini",
+            "loft": "13.5°"
+          },
+          {
+            "id": "e115a708-d560-4c16-a1d1-d86953cc5c73",
+            "location": "Spare Clubs",
+            "club": "9-Wood",
+            "brand": "Callaway",
+            "model": "2026 Quantum Max",
+            "loft": "24°"
+          },
+          {
+            "id": "d2a69df7-37e2-4b4e-8900-48ca9b71cd41",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Titleist",
+            "model": "GT280 Mini Driver",
+            "loft": "13°"
+          },
+          {
+            "id": "b0154287-a617-44bd-a576-6e6131d9244a",
+            "location": "Spare Clubs",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "eb4f92bf-debd-4ab2-ae25-3d87ed7b0d03",
+            "location": "Bag 1",
+            "club": "Driver",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond Max",
+            "loft": "9°"
+          },
+          {
+            "id": "16cb91aa-ab75-4cd8-9dc7-980633aca955",
+            "location": "Bag 1",
+            "club": "Mini Driver",
+            "brand": "Callaway",
+            "model": "Quantum",
+            "loft": "13.5°"
+          },
+          {
+            "id": "6df95338-4c1b-4251-8456-fa579e02fb21",
+            "location": "Bag 1",
+            "club": "5-Hybrid",
+            "brand": "Callaway",
+            "model": "Quantum Max",
+            "loft": "24°"
+          }
+        ],
+        "confirmations": {}
+      },
+      {
+        "id": "6d14201d-14ed-421c-9d7d-480769228fa3",
+        "startedAt": "2026-10-04T20:16:33.296Z",
+        "closedAt": null,
+        "clubSnapshots": [
+          {
+            "id": "47e15296-3d56-4e04-ba05-0989c3bec7df",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Ping",
+            "model": "G440 LST",
+            "loft": "7.5°"
+          },
+          {
+            "id": "617f45ea-3b93-4765-bfaa-a78de2760c46",
+            "location": "Spare Clubs",
+            "club": "3-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "15°"
+          },
+          {
+            "id": "acefbd8a-11c7-4a43-99a6-f7cc1c3d04b3",
+            "location": "Bag 1",
+            "club": "5-Wood",
+            "brand": "Ping",
+            "model": "G440 Max",
+            "loft": "19°"
+          },
+          {
+            "id": "b8c46e52-f57d-4272-8247-e6f251c9fbe9",
+            "location": "Bag 1",
+            "club": "7-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "21°"
+          },
+          {
+            "id": "590c79ed-2be8-4991-b32d-ac0ec28c38dc",
+            "location": "Spare Clubs",
+            "club": "5-Hybrid",
+            "brand": "Srixon",
+            "model": "ZXi",
+            "loft": "25°"
+          },
+          {
+            "id": "c42c6bb5-64ee-44cf-a329-85ffd4023b25",
+            "location": "Bag 1",
+            "club": "6-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "28°"
+          },
+          {
+            "id": "07eb36aa-a6a6-4760-9eb7-b23330a920a1",
+            "location": "Bag 1",
+            "club": "7-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "32°"
+          },
+          {
+            "id": "9941c25b-45db-4970-b5d9-bce00fb95502",
+            "location": "Bag 1",
+            "club": "8-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "36°"
+          },
+          {
+            "id": "3c5f6f88-87fa-44a9-ab65-86c21ed103b6",
+            "location": "Bag 1",
+            "club": "9-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "41°"
+          },
+          {
+            "id": "1cc36719-a0f6-4d07-b18a-e653cad1b47a",
+            "location": "Bag 1",
+            "club": "Pitching Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "46°"
+          },
+          {
+            "id": "af248c31-4dfb-417e-aae1-25d5b3463a32",
+            "location": "Bag 1",
+            "club": "Gap Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "51°"
+          },
+          {
+            "id": "72e17946-14a8-4448-bee5-606715797d6d",
+            "location": "Bag 1",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Mid-10, SWAG King & Queen",
+            "loft": "54°"
+          },
+          {
+            "id": "9b4f0298-5c18-4be7-9290-a02d4eed71e2",
+            "location": "Bag 1",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Full Face ADAPT 8",
+            "loft": "58°"
+          },
+          {
+            "id": "911741db-eef1-4a71-9b5d-793b928d2cc8",
+            "location": "Bag 1",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "e60cd917-0e7d-4276-a1d6-36f9e6507ecc",
+            "location": "Bag 2",
+            "club": "Driver",
+            "brand": "Ping",
+            "model": "G430 LST",
+            "loft": "9°"
+          },
+          {
+            "id": "0724bace-50dc-4dd8-bf02-05bbba1c4d5d",
+            "location": "Bag 2",
+            "club": "3-Wood",
+            "brand": "Ping",
+            "model": "G440 LST",
+            "loft": "15°"
+          },
+          {
+            "id": "078ec0f6-3c9f-47bd-81c4-e9bcf4474a13",
+            "location": "Bag 2",
+            "club": "5-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "18°"
+          },
+          {
+            "id": "08df8aaf-f14d-4e52-aeed-87e5737873f7",
+            "location": "Bag 2",
+            "club": "7-Wood",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond",
+            "loft": "21°"
+          },
+          {
+            "id": "29c56796-e918-4952-81f5-09c9a5a4a6cc",
+            "location": "Spare Clubs",
+            "club": "2-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi4D",
+            "loft": "17°"
+          },
+          {
+            "id": "57576129-1da8-4c42-a1bf-d9f78752de96",
+            "location": "Bag 2",
+            "club": "5-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "25°"
+          },
+          {
+            "id": "72e61897-cec5-4269-b2ee-a1bd37cdbf56",
+            "location": "Bag 2",
+            "club": "6-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "28°"
+          },
+          {
+            "id": "223fedcb-6ab5-4c95-adfb-06520d2a9632",
+            "location": "Bag 2",
+            "club": "7-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "32°"
+          },
+          {
+            "id": "8800aacd-ae67-42b2-816b-e4d37d5f0db8",
+            "location": "Bag 2",
+            "club": "8-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "36°"
+          },
+          {
+            "id": "28da243f-6534-4bd4-b393-ea107502f41a",
+            "location": "Bag 2",
+            "club": "9-Iron",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "41°"
+          },
+          {
+            "id": "7f8c211c-0b7e-499a-be19-4adf4fe5cb25",
+            "location": "Bag 2",
+            "club": "Pitching Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "46°"
+          },
+          {
+            "id": "ff601023-2c80-41bf-8b33-26854f99a99d",
+            "location": "Bag 2",
+            "club": "Gap Wedge",
+            "brand": "Srixon",
+            "model": "ZXi7",
+            "loft": "51°"
+          },
+          {
+            "id": "24e2a8c0-9986-4cb3-8b54-5d2335431f52",
+            "location": "Bag 2",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Tour Rack Mid-10",
+            "loft": "54°"
+          },
+          {
+            "id": "9c83bd3e-3929-4ffa-a2e3-2a8b1cd0980e",
+            "location": "Bag 2",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Tour Rack Full Face ADAPT 8",
+            "loft": "58°"
+          },
+          {
+            "id": "a82f69c0-bb67-4462-806c-7a5350ede2ce",
+            "location": "Bag 2",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "5f9a0a51-d6d4-4259-8400-2ceb2acc0f29",
+            "location": "Spare Clubs",
+            "club": "2-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi35",
+            "loft": "17°"
+          },
+          {
+            "id": "6cd893aa-3708-4463-b5e3-007154453285",
+            "location": "Spare Clubs",
+            "club": "Wedge",
+            "brand": "Cleveland",
+            "model": "RTZ Black Satin Mid-10",
+            "loft": "54°"
+          },
+          {
+            "id": "1cef970a-da90-4271-bed8-5bedd012ab2c",
+            "location": "Spare Clubs",
+            "club": "Driving Iron / 3-Iron",
+            "brand": "Ping",
+            "model": "iDi",
+            "loft": "17°"
+          },
+          {
+            "id": "fd5415fd-54e6-472d-bf21-a8a03d55a254",
+            "location": "Spare Clubs",
+            "club": "3-Hybrid",
+            "brand": "TaylorMade",
+            "model": "Qi35",
+            "loft": "19°"
+          },
+          {
+            "id": "9f93810a-bc9a-469d-9c78-a1762e989fbe",
+            "location": "Spare Clubs",
+            "club": "4-Hybrid",
+            "brand": "Callaway",
+            "model": "Quantum Max",
+            "loft": "21°"
+          },
+          {
+            "id": "1f0bd345-302a-459c-a448-344bb20da19f",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Callaway",
+            "model": "2026 Quantum Mini",
+            "loft": "13.5°"
+          },
+          {
+            "id": "e115a708-d560-4c16-a1d1-d86953cc5c73",
+            "location": "Spare Clubs",
+            "club": "9-Wood",
+            "brand": "Callaway",
+            "model": "2026 Quantum Max",
+            "loft": "24°"
+          },
+          {
+            "id": "d2a69df7-37e2-4b4e-8900-48ca9b71cd41",
+            "location": "Spare Clubs",
+            "club": "Driver",
+            "brand": "Titleist",
+            "model": "GT280 Mini Driver",
+            "loft": "13°"
+          },
+          {
+            "id": "b0154287-a617-44bd-a576-6e6131d9244a",
+            "location": "Spare Clubs",
+            "club": "Putter",
+            "brand": "Scotty Cameron",
+            "model": "Phantom 5.2",
+            "loft": ""
+          },
+          {
+            "id": "eb4f92bf-debd-4ab2-ae25-3d87ed7b0d03",
+            "location": "Bag 1",
+            "club": "Driver",
+            "brand": "Callaway",
+            "model": "Quantum Triple Diamond Max",
+            "loft": "9°"
+          },
+          {
+            "id": "16cb91aa-ab75-4cd8-9dc7-980633aca955",
+            "location": "Bag 1",
+            "club": "Mini Driver",
+            "brand": "Callaway",
+            "model": "Quantum",
+            "loft": "13.5°"
+          },
+          {
+            "id": "6df95338-4c1b-4251-8456-fa579e02fb21",
+            "location": "Bag 1",
+            "club": "5-Hybrid",
+            "brand": "Callaway",
+            "model": "Quantum Max",
+            "loft": "24°"
+          }
+        ],
+        "confirmations": {}
+      }
+    ],
+    "activeCheckId": "6d14201d-14ed-421c-9d7d-480769228fa3"
+  }
 }
