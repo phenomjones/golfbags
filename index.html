@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.8
-  Release date: August 22, 2026 at 10:04 PM EDT
-  Release timestamp: 2026-08-22T22:04:00-04:00
+  Version: v1.4.9
+  Release date: October 4, 2026 at 3:30 PM EDT
+  Release timestamp: 2026-10-04T15:30:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.8" />
-<meta name="release-date" content="2026-08-22T22:04:00-04:00" />
+<meta name="application-version" content="1.4.9" />
+<meta name="release-date" content="2026-10-04T15:30:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -480,6 +480,32 @@
   .validation-unknown { color: #475569; }
   .format-hint { margin-top: 5px; color: var(--muted); font-size: 11px; }
 
+  .check-panel { margin: 18px 0; padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+  .check-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .check-heading h2 { margin: 0 0 4px; font-size: 20px; }
+  .check-heading p, .check-meta { margin: 0; color: var(--muted); font-size: 13px; }
+  .check-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .check-controls button { min-height: 40px; }
+  .check-progress { margin-top: 15px; display: grid; gap: 7px; }
+  .check-progress strong { font-size: 16px; }
+  .check-progress progress { width: 100%; height: 13px; accent-color: var(--accent); }
+  .check-view-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+  .check-view-tabs button[aria-pressed="true"] { background: var(--accent); color: white; border-color: var(--accent); }
+  .check-report { margin-top: 13px; }
+  .check-report[hidden], .check-history[hidden] { display: none; }
+  .check-report h3, .check-history h3 { margin: 0 0 8px; font-size: 16px; }
+  .check-report p { margin: 0 0 9px; color: var(--muted); font-size: 13px; }
+  .check-report-list, .check-history-list { margin: 0; padding-left: 22px; }
+  .check-report-list li, .check-history-list li { padding: 5px 0; }
+  .check-history { margin-top: 13px; }
+  .check-history details { border-top: 1px solid var(--line); padding: 10px 0; }
+  .check-history summary { cursor: pointer; font-weight: 700; }
+  .check-history small { color: var(--muted); }
+  .check-cell { white-space: nowrap; min-width: 116px; }
+  .check-cell label { display: inline-flex; align-items: center; gap: 7px; margin: 0; font-size: 12px; text-transform: none; letter-spacing: 0; cursor: pointer; }
+  .check-cell input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  .check-cell small { display: block; margin-top: 4px; color: var(--muted); }
+
 </style>
 </head>
 <body>
@@ -487,7 +513,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.8 • August 22, 2026 at 10:04 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.9 • October 4, 2026 at 3:30 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -518,6 +544,21 @@
     <button type="button" class="stat stat-shafts" data-location="Shafts" aria-pressed="false"><strong id="shaftCount">0</strong><span>Loose shafts</span></button>
   </section>
 
+  <section class="check-panel" aria-label="Physical inventory check">
+    <div class="check-heading">
+      <div><h2>Physical inventory check</h2><p>Confirm each club you can physically find. Your previous checks keep their original dates.</p></div>
+      <div class="check-controls"><button type="button" class="primary" id="newCheckBtn">Start new check</button></div>
+    </div>
+    <div class="check-progress" id="checkProgress" aria-live="polite"></div>
+    <div class="check-view-tabs" aria-label="Inventory check views">
+      <button type="button" class="secondary" id="allCheckViewBtn" aria-pressed="true">All clubs</button>
+      <button type="button" class="secondary" id="uncheckedViewBtn" aria-pressed="false">Not confirmed</button>
+      <button type="button" class="secondary" id="checkHistoryBtn" aria-pressed="false">Check history</button>
+    </div>
+    <div class="check-report" id="checkReport" hidden></div>
+    <div class="check-history" id="checkHistory" hidden></div>
+  </section>
+
   <div class="legend" id="clubLegend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
     <span class="legend-item"><span class="legend-swatch" style="background:var(--wood-bg)"></span>Fairway Woods</span>
@@ -531,7 +572,7 @@
     <table>
       <thead>
         <tr>
-          <th>#</th><th>Location</th><th>Club</th><th>Brand</th><th>Model</th><th><button type="button" class="sort-header" id="loftSortBtn" aria-label="Sort by loft" aria-pressed="false">Loft <span id="loftSortIcon" aria-hidden="true">↕</span></button></th><th>Shaft</th><th>Flex</th><th>Grip</th><th>Notes</th><th>Actions</th>
+          <th>#</th><th>Location</th><th>Club</th><th>Brand</th><th>Model</th><th><button type="button" class="sort-header" id="loftSortBtn" aria-label="Sort by loft" aria-pressed="false">Loft <span id="loftSortIcon" aria-hidden="true">↕</span></button></th><th>Shaft</th><th>Flex</th><th>Grip</th><th>Notes</th><th>Possession</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="inventoryBody"></tbody>
@@ -548,13 +589,13 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.8 • August 22, 2026 at 10:04 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.9 • October 4, 2026 at 3:30 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
     <div class="maintenance-copy">
       <strong>Data maintenance</strong>
-      Resetting restores the built-in starter inventory and permanently removes browser edits and loose shafts.
+      Resetting restores the built-in starter inventory and permanently removes browser edits, loose shafts, and check history.
     </div>
     <button type="button" class="reset-button" id="resetBtn">Reset all data</button>
   </section>
@@ -630,7 +671,7 @@
   <form method="dialog" id="githubForm">
     <div class="modal-head"><h2>GitHub Sync Settings</h2></div>
     <div class="modal-body">
-      <p class="sync-settings-note">These settings apply only to this browser. The app syncs clubs and loose shafts through one JSON file in your GitHub repository.</p>
+      <p class="sync-settings-note">These settings apply only to this browser. The app syncs clubs, loose shafts, and physical-check history through one JSON file in your GitHub repository.</p>
       <div class="form-grid">
         <div><label for="githubOwner">GitHub Username / Owner</label><input id="githubOwner" required placeholder="phenomjones" autocomplete="username" /></div>
         <div><label for="githubRepo">Repository</label><input id="githubRepo" required placeholder="golfclubinventory" /></div>
@@ -649,9 +690,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.8';
-const RELEASED_AT = '2026-08-22T22:04:00-04:00';
-const RELEASED_DISPLAY = 'August 22, 2026 at 10:04 PM EDT';
+const APP_VERSION = '1.4.9';
+const RELEASED_AT = '2026-10-04T15:30:00-04:00';
+const RELEASED_DISPLAY = 'October 4, 2026 at 3:30 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -691,11 +732,14 @@ const STARTER_DATA = [
 
 const STORAGE_KEY = 'golfClubInventoryV1';
 const SHAFT_STORAGE_KEY = 'golfShaftInventoryV1';
+const CHECK_STORAGE_KEY = 'golfInventoryChecksV1';
 const LOCAL_MODIFIED_KEY = 'golfInventoryLocalModifiedV1';
 const GITHUB_SETTINGS_KEY = 'golfInventoryGithubSettingsV1';
 const GITHUB_LAST_REMOTE_KEY = 'golfInventoryGithubLastRemoteV1';
 let clubs = loadData();
 let shafts = loadShaftData();
+let checkState = loadCheckData();
+let checkView = 'all';
 let activeLocation = 'All';
 let loftSortDirection = null;
 
@@ -1041,17 +1085,24 @@ function safeStorageSet(key, value) {
   }
 }
 
+function safeStorageRemove(key) {
+  try { window.localStorage.removeItem(key); return true; }
+  catch (error) { console.warn('Browser storage could not be updated.', error); return false; }
+}
+
 function loadData() {
   const saved = safeStorageGet(STORAGE_KEY);
-  if (!saved) return cloneStarterData();
+  if (!saved) {
+    const starter = cloneStarterData();
+    // Persist generated IDs immediately so check confirmations still match after a reload.
+    safeStorageSet(STORAGE_KEY, JSON.stringify(starter));
+    return starter;
+  }
 
   try {
     const raw = JSON.parse(saved);
-    if (!Array.isArray(raw) || raw.length === 0) {
-      const restored = cloneStarterData();
-      safeStorageSet(STORAGE_KEY, JSON.stringify(restored));
-      return restored;
-    }
+    if (!Array.isArray(raw)) return cloneStarterData();
+    if (raw.length === 0) return [];
 
     const parsed = raw.filter(item => item && typeof item === 'object').map(normalizeClubRecord);
     if (parsed.length === 0) return cloneStarterData();
@@ -1108,6 +1159,70 @@ function loadShaftData() {
   }
 }
 function saveShaftData() { const ok = safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts)); markLocalModified(); return ok; }
+function newId() { return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+function clubSnapshot(club) {
+  return { id: club.id, location: club.location, club: club.club, brand: club.brand, model: club.model, loft: club.loft };
+}
+function normalizeCheckState(raw) {
+  if (!raw || !Array.isArray(raw.sessions)) throw new Error('Invalid inventory-check history.');
+  const sessions = raw.sessions.map(session => {
+    if (!session || typeof session.id !== 'string' || !session.startedAt || !Array.isArray(session.clubSnapshots) ||
+        !session.confirmations || typeof session.confirmations !== 'object' || Array.isArray(session.confirmations)) {
+      throw new Error('Invalid inventory-check session.');
+    }
+    return {
+      id: session.id, startedAt: session.startedAt, closedAt: session.closedAt || null,
+      clubSnapshots: session.clubSnapshots.filter(item => item && typeof item.id === 'string').map(clubSnapshot),
+      confirmations: Object.fromEntries(Object.entries(session.confirmations).filter(([id, date]) => typeof id === 'string' && typeof date === 'string'))
+    };
+  });
+  const activeCheckId = sessions.some(session => session.id === raw.activeCheckId) ? raw.activeCheckId : null;
+  return { sessions, activeCheckId };
+}
+function loadCheckData() {
+  const saved = safeStorageGet(CHECK_STORAGE_KEY);
+  if (!saved) return { sessions: [], activeCheckId: null };
+  try { return normalizeCheckState(JSON.parse(saved)); }
+  catch (error) {
+    console.warn('Inventory-check history could not be read. The saved record has been left untouched.', error);
+    return { sessions: [], activeCheckId: null };
+  }
+}
+function saveCheckData() {
+  const ok = safeStorageSet(CHECK_STORAGE_KEY, JSON.stringify(checkState));
+  if (ok) markLocalModified();
+  return ok;
+}
+function currentCheck() { return checkState.sessions.find(session => session.id === checkState.activeCheckId) || null; }
+function saveCheckChange(change) {
+  const previous = structuredClone(checkState);
+  const previousView = checkView;
+  change();
+  if (!saveCheckData()) {
+    checkState = previous;
+    checkView = previousView;
+    render();
+    alert('This check could not be saved in this browser. No checkmarks were changed.');
+    return false;
+  }
+  render();
+  refreshSyncStatus();
+  return true;
+}
+function formatCheckDate(value) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString(undefined, { dateStyle:'medium', timeStyle:'short' });
+}
+function checkClubLabel(club) { return [club.location, club.club, club.brand, club.model, club.loft].filter(Boolean).join(' · '); }
+function addClubToCurrentCheck(club) {
+  const session = currentCheck();
+  if (!session || session.clubSnapshots.some(item => item.id === club.id)) return;
+  session.clubSnapshots.push(clubSnapshot(club));
+  if (!saveCheckData()) {
+    session.clubSnapshots.pop();
+    alert('The new club was saved, but its check-history snapshot could not be saved in this browser.');
+  }
+}
 function esc(v='') { return String(v).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
 function inferGithubSettings() {
@@ -1188,6 +1303,7 @@ function validateRemoteInventory(data) {
   return {
     clubs: data.clubs.filter(x => x && typeof x === 'object').map(normalizeClubRecord),
     shafts: data.shafts.filter(x => x && typeof x === 'object'),
+    checks: data.checks === undefined ? null : normalizeCheckState(data.checks),
     updatedAt: data.updatedAt || null,
     appVersion: data.appVersion || null
   };
@@ -1240,15 +1356,34 @@ async function pullFromGithub() {
       const ok = confirm(`This browser has local changes made after its last GitHub sync. Pulling will replace them with the GitHub copy from ${formatSyncDate(parsed.updatedAt)}. Continue?`);
       if (!ok) { refreshSyncStatus(); return; }
     }
-    clubs = parsed.clubs.map(normalizeClubRecord);
+    // Schema 1 files have no check history. Preserve this browser's sessions during that migration.
+    const nextChecks = parsed.checks || checkState;
+    const updates = [
+      [CHECK_STORAGE_KEY, JSON.stringify(nextChecks)],
+      [SHAFT_STORAGE_KEY, JSON.stringify(parsed.shafts)],
+      [STORAGE_KEY, JSON.stringify(parsed.clubs)]
+    ];
+    const previous = updates.map(([key]) => [key, safeStorageGet(key)]);
+    const written = [];
+    for (const [key, value] of updates) {
+      if (!safeStorageSet(key, value)) {
+        written.reverse().forEach(savedKey => {
+          const oldValue = previous.find(([name]) => name === savedKey)[1];
+          if (oldValue === null) safeStorageRemove(savedKey);
+          else safeStorageSet(savedKey, oldValue);
+        });
+        throw new Error('This browser could not save the pulled inventory. Your earlier local data was restored.');
+      }
+      written.push(key);
+    }
+    clubs = parsed.clubs;
     shafts = parsed.shafts;
-    safeStorageSet(STORAGE_KEY, JSON.stringify(clubs));
-    safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts));
+    checkState = nextChecks;
     const remoteTime = parsed.updatedAt || new Date().toISOString();
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, remoteTime);
     safeStorageSet(LOCAL_MODIFIED_KEY, remoteTime);
     render();
-    setSyncStatus(`Pulled ${clubs.length} clubs and ${shafts.length} shafts from GitHub • ${formatSyncDate(remoteTime)}`, 'ok');
+    setSyncStatus(`Pulled ${clubs.length} clubs, ${shafts.length} shafts, and ${checkState.sessions.length} checks from GitHub${parsed.checks ? '' : ' (local check history kept)'} • ${formatSyncDate(remoteTime)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Pull failed.', 'error');
@@ -1283,7 +1418,7 @@ OK only if this browser should replace the GitHub copy.`);
       }
     }
     const updatedAt = new Date().toISOString();
-    const payload = { schemaVersion: 1, appVersion: APP_VERSION, updatedAt, clubs, shafts };
+    const payload = { schemaVersion: 2, appVersion: APP_VERSION, updatedAt, clubs, shafts, checks: checkState };
     const apiUrl = githubContentsUrl(settings).replace(/\?ref=.*$/, '');
 
     async function putInventory(sha=null) {
@@ -1314,7 +1449,7 @@ OK only if this browser should replace the GitHub copy.`);
     }
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, updatedAt);
     safeStorageSet(LOCAL_MODIFIED_KEY, updatedAt);
-    setSyncStatus(`Pushed ${clubs.length} clubs and ${shafts.length} shafts to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
+    setSyncStatus(`Pushed ${clubs.length} clubs, ${shafts.length} shafts, and ${checkState.sessions.length} checks to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Push failed.', 'error');
@@ -1386,8 +1521,9 @@ function filteredClubs() {
   const q = search.value.trim().toLowerCase();
   const filtered = clubs.filter(c => {
     const locationOk = activeLocation === 'All' || c.location === activeLocation;
+    const checkOk = checkView !== 'unchecked' || !currentCheck()?.confirmations[c.id];
     const haystack = Object.values(c).join(' ').toLowerCase();
-    return locationOk && (!q || haystack.includes(q));
+    return locationOk && checkOk && (!q || haystack.includes(q));
   });
 
   // An explicit loft sort temporarily overrides the normal golf-bag order.
@@ -1557,6 +1693,45 @@ function renderShafts() {
   shaftTableWrap.querySelector('table').style.display = data.length ? 'table' : 'none';
 }
 
+function renderCheckPanel() {
+  const session = currentCheck();
+  const confirmed = session ? clubs.filter(club => Boolean(session.confirmations[club.id])).length : 0;
+  const total = clubs.length;
+  const remaining = total - confirmed;
+  const progress = document.getElementById('checkProgress');
+  progress.innerHTML = session
+    ? `<strong>${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(session.startedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Inventory check progress"></progress>`
+    : '<strong>No check started</strong><span class="check-meta">Start a check to confirm the clubs you have in hand.</span>';
+  document.getElementById('newCheckBtn').textContent = session ? 'Start new check' : 'Start first check';
+  [['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked'],['checkHistoryBtn','history']].forEach(([id, view]) => {
+    document.getElementById(id).setAttribute('aria-pressed', String(checkView === view));
+  });
+
+  const report = document.getElementById('checkReport');
+  report.hidden = checkView !== 'unchecked';
+  if (checkView === 'unchecked') {
+    const missing = clubs.filter(club => !session?.confirmations[club.id]).sort(allClubsComparator);
+    report.innerHTML = `<h3>Clubs not confirmed in ${session ? 'this check' : 'a check'}</h3>` +
+      (session
+        ? `<p>${missing.length} club${missing.length === 1 ? '' : 's'} still need${missing.length === 1 ? 's' : ''} confirmation. This report includes every inventory location.</p>`
+        : '<p>Start a check to see which clubs have not been confirmed.</p>') +
+      (session && missing.length
+        ? `<ol class="check-report-list">${missing.map(club => `<li>${esc(checkClubLabel(club))}</li>`).join('')}</ol>`
+        : session ? '<p>Every club currently in the inventory is confirmed.</p>' : '');
+  }
+
+  const history = document.getElementById('checkHistory');
+  history.hidden = checkView !== 'history';
+  if (checkView === 'history') {
+    const ordered = checkState.sessions.slice().sort((a,b) => new Date(b.startedAt) - new Date(a.startedAt));
+    history.innerHTML = '<h3>Check history</h3>' + (ordered.length ? ordered.map(item => {
+      const count = item.clubSnapshots.filter(club => item.confirmations[club.id]).length;
+      const rows = item.clubSnapshots.slice().sort(allClubsComparator).map(club => `<li>${esc(checkClubLabel(club))} — ${item.confirmations[club.id] ? `Confirmed ${esc(formatCheckDate(item.confirmations[club.id]))}` : 'Not confirmed'}</li>`).join('');
+      return `<details><summary>${esc(formatCheckDate(item.startedAt))} · ${count} of ${item.clubSnapshots.length} confirmed${item.id === checkState.activeCheckId ? ' · Current' : ''}</summary><small>${item.closedAt ? `Next check started ${esc(formatCheckDate(item.closedAt))}` : 'Current check'}. Club details reflect the inventory when this check was made.</small><ol class="check-history-list">${rows}</ol></details>`;
+    }).join('') : '<p>No checks have been recorded yet.</p>');
+  }
+}
+
 function render() {
   const showingShafts = activeLocation === 'Shafts';
   clubTableWrap.classList.toggle('hidden', showingShafts);
@@ -1582,8 +1757,10 @@ function render() {
       <td>${flexDisplay(c.flex)}</td>
       <td class="grip-cell">${gripDisplay(c.grip)}</td>
       <td>${esc(c.notes)}</td>
+      <td class="check-cell">${currentCheck() ? `<label><input type="checkbox" data-check-id="${esc(c.id)}" aria-label="Confirm possession of ${esc(checkClubLabel(c))}" ${currentCheck().confirmations[c.id] ? 'checked' : ''}><span>${currentCheck().confirmations[c.id] ? 'Confirmed' : 'Confirm'}</span></label>${currentCheck().confirmations[c.id] ? `<small>${esc(formatCheckDate(currentCheck().confirmations[c.id]))}</small>` : ''}` : '<small>Start a check</small>'}</td>
       <td><div class="actions"><button class="secondary" onclick="editClub('${c.id}')">Edit</button><button class="danger" onclick="deleteClub('${c.id}')">Delete</button></div></td>
     </tr>`).join('');
+  emptyState.textContent = checkView === 'unchecked' ? 'No clubs in this view still need confirmation.' : 'No clubs match this view.';
   emptyState.hidden = data.length !== 0;
   clubTableWrap.querySelector('table').style.display = data.length ? 'table' : 'none';
   const bag1 = clubs.filter(c=>c.location==='Bag 1').length;
@@ -1596,6 +1773,7 @@ function render() {
   document.getElementById('shaftCount').textContent = shafts.length;
   document.getElementById('bag1Count').closest('.stat').classList.toggle('over-limit', bag1 > 14);
   document.getElementById('bag2Count').closest('.stat').classList.toggle('over-limit', bag2 > 14);
+  renderCheckPanel();
 }
 
 
@@ -1899,6 +2077,43 @@ window.deleteClub = id => {
   render();
 };
 
+document.getElementById('newCheckBtn').addEventListener('click', () => {
+  const existing = currentCheck();
+  saveCheckChange(() => {
+    const now = new Date().toISOString();
+    if (existing) existing.closedAt = now;
+    const next = { id: newId(), startedAt: now, closedAt: null, clubSnapshots: clubs.map(clubSnapshot), confirmations: {} };
+    checkState.sessions.push(next);
+    checkState.activeCheckId = next.id;
+    checkView = 'all';
+  });
+});
+body.addEventListener('change', event => {
+  const input = event.target.closest('input[data-check-id]');
+  if (!input) return;
+  const session = currentCheck();
+  const club = clubs.find(item => item.id === input.dataset.checkId);
+  if (!session || !club) { render(); return; }
+  saveCheckChange(() => {
+    if (input.checked) session.confirmations[club.id] = new Date().toISOString();
+    else delete session.confirmations[club.id];
+  });
+});
+[['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked'],['checkHistoryBtn','history']].forEach(([id, view]) => {
+  document.getElementById(id).addEventListener('click', () => {
+    checkView = view;
+    if (view === 'unchecked') {
+      activeLocation = 'All';
+      document.querySelectorAll('.stat[data-location]').forEach(card => {
+        const selected = card.dataset.location === 'All';
+        card.classList.toggle('active', selected);
+        card.setAttribute('aria-pressed', String(selected));
+      });
+    }
+    render();
+  });
+});
+
 const shaftDialog = document.getElementById('shaftDialog');
 const shaftForm = document.getElementById('shaftForm');
 function openShaftForm(shaft=null) {
@@ -1978,24 +2193,28 @@ form.addEventListener('submit', e => {
     if (!confirm(`Validation found a possible conflict:\n\n${warningText}\n\nSave anyway?`)) return;
   }
   if (id) clubs = clubs.map(c => c.id===id ? item : c); else clubs.push(item);
-  saveData(); dialog.close(); render();
+  saveData();
+  if (!id) addClubToCurrentCheck(item);
+  dialog.close(); render();
 });
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   const firstConfirmed = confirm(
-    'Reset all inventory data? This will replace your current clubs with the built-in starter inventory and delete all loose shafts.'
+    'Reset all inventory data? This will replace your current clubs with the built-in starter inventory and delete all loose shafts and physical-check history.'
   );
   if (!firstConfirmed) return;
 
   const finalConfirmed = confirm(
-    'Are you absolutely sure? This permanently removes all browser edits and loose shafts. This action cannot be undone.'
+    'Are you absolutely sure? This permanently removes all browser edits, loose shafts, and check history. This action cannot be undone.'
   );
   if (!finalConfirmed) return;
 
   clubs = cloneStarterData();
   shafts = [];
+  checkState = { sessions: [], activeCheckId: null };
   saveData();
   saveShaftData();
+  saveCheckData();
   render();
 });
 
