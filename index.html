@@ -1,15 +1,15 @@
 <!--
   Golf Club Inventory
-  Version: v1.4.11
-  Release date: October 4, 2026 at 4:33 PM EDT
-  Release timestamp: 2026-10-04T16:33:00-04:00
+  Version: v1.4.12
+  Release date: October 4, 2026 at 5:46 PM EDT
+  Release timestamp: 2026-10-04T17:46:00-04:00
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="application-version" content="1.4.11" />
-<meta name="release-date" content="2026-10-04T16:33:00-04:00" />
+<meta name="application-version" content="1.4.12" />
+<meta name="release-date" content="2026-10-04T17:46:00-04:00" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Golf Club Inventory</title>
 <style>
@@ -505,6 +505,15 @@
   .model-check { display: inline-flex; align-items: center; gap: 8px; margin: 0; color: var(--ink); font-size: inherit; font-weight: inherit; text-transform: none; letter-spacing: 0; cursor: pointer; }
   .model-check input { width: 18px; height: 18px; margin: 0; flex: 0 0 18px; accent-color: var(--accent); }
   .model-check-date { display: block; margin: 4px 0 0 26px; color: var(--muted); font-size: 11px; }
+  .departure-panel { margin: 18px 0; padding: 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+  .departure-panel summary { cursor: pointer; font-size: 18px; font-weight: 800; }
+  .departure-panel p { margin: 8px 0 12px; color: var(--muted); font-size: 13px; }
+  .departure-list { display: grid; gap: 10px; }
+  .departure-entry { border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: #f9fbfa; }
+  .departure-entry-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .departure-entry small { display: block; margin-top: 5px; color: var(--muted); }
+  .departure-notes { margin-top: 8px; white-space: pre-wrap; }
+  .departure-entry .actions { margin-top: 10px; }
 
 </style>
 </head>
@@ -513,7 +522,7 @@
   <div class="header-inner">
     <div class="title-row">
       <h1>Golf Club Inventory</h1>
-      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.11 • October 4, 2026 at 4:33 PM EDT</span></span>
+      <span class="release-badge" title="Release date and time"><span class="release-dot"></span><span id="releaseBadge">Version 1.4.12 • October 4, 2026 at 5:46 PM EDT</span></span>
     </div>
     <p>Track every club, its setup, and where it currently lives.</p>
   </div>
@@ -547,7 +556,7 @@
   <section class="check-panel" aria-label="Physical inventory check">
     <div class="check-heading">
       <div><h2>Physical inventory check</h2><p>Confirm each club you can physically find. Your previous checks keep their original dates.</p></div>
-      <div class="check-controls"><button type="button" class="primary" id="newCheckBtn">Start new check</button></div>
+      <div class="check-controls"><button type="button" class="primary" id="newCheckBtn">Start new check</button><button type="button" class="secondary" id="endCheckBtn" hidden>End check and lock results</button></div>
     </div>
     <div class="check-progress" id="checkProgress" aria-live="polite"></div>
     <div class="check-view-tabs" aria-label="Inventory check views">
@@ -558,6 +567,12 @@
     <div class="check-report" id="checkReport" hidden></div>
     <div class="check-history" id="checkHistory" hidden></div>
   </section>
+
+  <details class="departure-panel" id="departurePanel">
+    <summary>No longer held <span id="departureCount">(0)</span></summary>
+    <p>Clubs marked sold, traded, or otherwise no longer held are kept here with their details and notes. They are excluded from your active inventory.</p>
+    <div class="departure-list" id="departureList"></div>
+  </details>
 
   <div class="legend" id="clubLegend" aria-label="Club category colors">
     <span class="legend-item"><span class="legend-swatch" style="background:var(--driver-bg)"></span>Driver</span>
@@ -589,13 +604,13 @@
   </div>
   <div class="footer-note">
     <span>Changes are saved automatically in this browser using local storage.</span>
-    <span class="release-footer" id="releaseFooter">Version 1.4.11 • October 4, 2026 at 4:33 PM EDT</span>
+    <span class="release-footer" id="releaseFooter">Version 1.4.12 • October 4, 2026 at 5:46 PM EDT</span>
   </div>
 
   <section class="maintenance-section" aria-label="Data maintenance">
     <div class="maintenance-copy">
       <strong>Data maintenance</strong>
-      Resetting restores the built-in starter inventory and permanently removes browser edits, loose shafts, and check history.
+      Resetting restores the built-in starter inventory and permanently removes browser edits, loose shafts, check history, and the no-longer-held log.
     </div>
     <button type="button" class="reset-button" id="resetBtn">Reset all data</button>
   </section>
@@ -630,6 +645,23 @@
   </form>
 </dialog>
 
+
+<dialog id="departureDialog">
+  <form method="dialog" id="departureForm">
+    <div class="modal-head"><h2 id="departureDialogTitle">Mark club as no longer held</h2></div>
+    <div class="modal-body">
+      <p id="departureClubLabel" class="sync-settings-note"></p>
+      <input type="hidden" id="departureClubId" />
+      <input type="hidden" id="departureEntryId" />
+      <div class="form-grid">
+        <div><label for="departureReason">What happened?</label><select id="departureReason" required><option value="Sold">Sold</option><option value="Traded">Traded</option><option value="No longer have">No longer have</option></select></div>
+        <div><label for="departureDate">Date</label><input id="departureDate" type="date" required /></div>
+        <div class="full"><label for="departureNotes">Notes</label><textarea id="departureNotes" rows="4" placeholder="Who it went to, trade details, price, or anything you want to remember."></textarea></div>
+      </div>
+      <div class="modal-actions"><button type="button" class="secondary" id="cancelDepartureBtn">Cancel</button><button type="submit" class="primary" id="saveDepartureBtn">Save to log</button></div>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="speakDialog">
   <div class="modal-head"><h2>Speak to Add a Club</h2></div>
@@ -671,7 +703,7 @@
   <form method="dialog" id="githubForm">
     <div class="modal-head"><h2>GitHub Sync Settings</h2></div>
     <div class="modal-body">
-      <p class="sync-settings-note">These settings apply only to this browser. The app syncs clubs, loose shafts, and physical-check history through one JSON file in your GitHub repository.</p>
+      <p class="sync-settings-note">These settings apply only to this browser. The app syncs clubs, loose shafts, physical-check history, and the no-longer-held log through one JSON file in your GitHub repository.</p>
       <div class="form-grid">
         <div><label for="githubOwner">GitHub Username / Owner</label><input id="githubOwner" required placeholder="phenomjones" autocomplete="username" /></div>
         <div><label for="githubRepo">Repository</label><input id="githubRepo" required placeholder="golfclubinventory" /></div>
@@ -690,9 +722,9 @@
 </dialog>
 
 <script>
-const APP_VERSION = '1.4.11';
-const RELEASED_AT = '2026-10-04T16:33:00-04:00';
-const RELEASED_DISPLAY = 'October 4, 2026 at 4:33 PM EDT';
+const APP_VERSION = '1.4.12';
+const RELEASED_AT = '2026-10-04T17:46:00-04:00';
+const RELEASED_DISPLAY = 'October 4, 2026 at 5:46 PM EDT';
 
 const STARTER_DATA = [
   {location:'Bag 1',club:'Driver',brand:'Ping',model:'G440 LST',loft:'7.5°',shaft:'Mitsubishi Diamana BB 63',flex:'X',grip:'Golf Pride CP2 Pro - Red Cap - Standard',notes:''},
@@ -733,9 +765,12 @@ const STARTER_DATA = [
 const STORAGE_KEY = 'golfClubInventoryV1';
 const SHAFT_STORAGE_KEY = 'golfShaftInventoryV1';
 const CHECK_STORAGE_KEY = 'golfInventoryChecksV1';
+const DEPARTED_STORAGE_KEY = 'golfClubDeparturesV1';
 const LOCAL_MODIFIED_KEY = 'golfInventoryLocalModifiedV1';
 const GITHUB_SETTINGS_KEY = 'golfInventoryGithubSettingsV1';
 const GITHUB_LAST_REMOTE_KEY = 'golfInventoryGithubLastRemoteV1';
+let departedLoadError = false;
+let departedClubs = loadDepartedData();
 let clubs = loadData();
 let shafts = loadShaftData();
 let checkState = loadCheckData();
@@ -1093,7 +1128,7 @@ function safeStorageRemove(key) {
 function loadData() {
   const saved = safeStorageGet(STORAGE_KEY);
   if (!saved) {
-    const starter = cloneStarterData();
+    const starter = cloneStarterData().filter(item => !wasClubArchived(item));
     // Persist generated IDs immediately so check confirmations still match after a reload.
     safeStorageSet(STORAGE_KEY, JSON.stringify(starter));
     return starter;
@@ -1101,11 +1136,13 @@ function loadData() {
 
   try {
     const raw = JSON.parse(saved);
-    if (!Array.isArray(raw)) return cloneStarterData();
+    if (!Array.isArray(raw)) return cloneStarterData().filter(item => !wasClubArchived(item));
     if (raw.length === 0) return [];
 
-    const parsed = raw.filter(item => item && typeof item === 'object').map(normalizeClubRecord);
-    if (parsed.length === 0) return cloneStarterData();
+    const normalized = raw.filter(item => item && typeof item === 'object').map(normalizeClubRecord);
+    if (normalized.length === 0) return cloneStarterData().filter(item => !wasClubArchived(item));
+    const archivedIds = new Set(departedClubs.map(entry => entry.club.id));
+    const parsed = normalized.filter(item => !archivedIds.has(item.id));
 
     const releaseAdditions = STARTER_DATA.filter(item =>
       item.location === 'Spare Clubs' &&
@@ -1118,7 +1155,8 @@ function loadData() {
       )
     );
 
-    releaseAdditions.forEach(item => {
+    if (!departedLoadError) releaseAdditions.forEach(item => {
+      if (wasClubArchived(item)) return;
       const exists = parsed.some(club =>
         club.location === item.location &&
         club.brand === item.brand &&
@@ -1133,7 +1171,7 @@ function loadData() {
     return parsed;
   } catch (error) {
     console.warn('Inventory data could not be read; restoring starter inventory.', error);
-    return cloneStarterData();
+    return cloneStarterData().filter(item => !wasClubArchived(item));
   }
 }
 
@@ -1160,6 +1198,73 @@ function loadShaftData() {
 }
 function saveShaftData() { const ok = safeStorageSet(SHAFT_STORAGE_KEY, JSON.stringify(shafts)); markLocalModified(); return ok; }
 function newId() { return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+function wasClubArchived(club) {
+  return departedClubs.some(entry => entry.club.location === club.location && entry.club.brand === club.brand &&
+    entry.club.model === club.model && entry.club.club === club.club && entry.club.loft === club.loft);
+}
+function normalizeDepartedEntry(entry) {
+  if (!entry || typeof entry.id !== 'string' || !entry.id || !entry.club || typeof entry.club.id !== 'string' ||
+      !['Sold','Traded','No longer have'].includes(entry.reason) ||
+      typeof entry.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) ||
+      typeof entry.recordedAt !== 'string' || typeof entry.notes !== 'string') {
+    throw new Error('Invalid no-longer-held club entry.');
+  }
+  return { id: entry.id, club: normalizeClubRecord(entry.club), reason: entry.reason,
+    date: entry.date, recordedAt: entry.recordedAt, notes: entry.notes };
+}
+function normalizeDepartedData(raw) {
+  if (!Array.isArray(raw)) throw new Error('Invalid no-longer-held log.');
+  const entries = raw.map(normalizeDepartedEntry);
+  if (new Set(entries.map(entry => entry.id)).size !== entries.length ||
+      new Set(entries.map(entry => entry.club.id)).size !== entries.length) {
+    throw new Error('Duplicate entries in the no-longer-held log.');
+  }
+  return entries;
+}
+function loadDepartedData() {
+  const saved = safeStorageGet(DEPARTED_STORAGE_KEY);
+  if (!saved) return [];
+  try { return normalizeDepartedData(JSON.parse(saved)); }
+  catch (error) {
+    departedLoadError = true;
+    console.warn('No-longer-held log could not be read. The saved record has been left untouched.', error);
+    return [];
+  }
+}
+function saveInventoryBundle(nextClubs, nextDeparted, nextChecks, nextShafts=shafts) {
+  if (departedLoadError) {
+    alert('The saved no-longer-held log could not be read. No changes were made. Keep a backup and repair that log before editing.');
+    return false;
+  }
+  const updates = [
+    [STORAGE_KEY, JSON.stringify(nextClubs)],
+    [DEPARTED_STORAGE_KEY, JSON.stringify(nextDeparted)],
+    [CHECK_STORAGE_KEY, JSON.stringify(nextChecks)],
+    [SHAFT_STORAGE_KEY, JSON.stringify(nextShafts)]
+  ];
+  const previous = updates.map(([key]) => [key, safeStorageGet(key)]);
+  const written = [];
+  for (const [key, value] of updates) {
+    if (!safeStorageSet(key, value)) {
+      written.reverse().forEach(savedKey => {
+        const oldValue = previous.find(([name]) => name === savedKey)[1];
+        if (oldValue === null) safeStorageRemove(savedKey);
+        else safeStorageSet(savedKey, oldValue);
+      });
+      alert('This browser could not save the club and its log together. No change was made.');
+      return false;
+    }
+    written.push(key);
+  }
+  clubs = nextClubs;
+  departedClubs = nextDeparted;
+  checkState = nextChecks;
+  shafts = nextShafts;
+  markLocalModified();
+  render();
+  refreshSyncStatus();
+  return true;
+}
 function clubSnapshot(club) {
   return { id: club.id, location: club.location, club: club.club, brand: club.brand, model: club.model, loft: club.loft };
 }
@@ -1176,7 +1281,7 @@ function normalizeCheckState(raw) {
       confirmations: Object.fromEntries(Object.entries(session.confirmations).filter(([id, date]) => typeof id === 'string' && typeof date === 'string'))
     };
   });
-  const activeCheckId = sessions.some(session => session.id === raw.activeCheckId) ? raw.activeCheckId : null;
+  const activeCheckId = sessions.some(session => session.id === raw.activeCheckId && !session.closedAt) ? raw.activeCheckId : null;
   return { sessions, activeCheckId };
 }
 function loadCheckData() {
@@ -1193,7 +1298,8 @@ function saveCheckData() {
   if (ok) markLocalModified();
   return ok;
 }
-function currentCheck() { return checkState.sessions.find(session => session.id === checkState.activeCheckId) || null; }
+function currentCheck() { return checkState.sessions.find(session => session.id === checkState.activeCheckId && !session.closedAt) || null; }
+function latestCheck() { return checkState.sessions.slice().sort((a,b) => new Date(b.startedAt) - new Date(a.startedAt))[0] || null; }
 function saveCheckChange(change) {
   const previous = structuredClone(checkState);
   const previousView = checkView;
@@ -1304,6 +1410,7 @@ function validateRemoteInventory(data) {
     clubs: data.clubs.filter(x => x && typeof x === 'object').map(normalizeClubRecord),
     shafts: data.shafts.filter(x => x && typeof x === 'object'),
     checks: data.checks === undefined ? null : normalizeCheckState(data.checks),
+    departedClubs: data.departedClubs === undefined ? null : normalizeDepartedData(data.departedClubs),
     updatedAt: data.updatedAt || null,
     appVersion: data.appVersion || null
   };
@@ -1356,12 +1463,16 @@ async function pullFromGithub() {
       const ok = confirm(`This browser has local changes made after its last GitHub sync. Pulling will replace them with the GitHub copy from ${formatSyncDate(parsed.updatedAt)}. Continue?`);
       if (!ok) { refreshSyncStatus(); return; }
     }
-    // Schema 1 files have no check history. Preserve this browser's sessions during that migration.
+    // Older files lack these records. Keep local records during that migration.
     const nextChecks = parsed.checks || checkState;
+    const nextDeparted = parsed.departedClubs || departedClubs;
+    const departedIds = new Set(nextDeparted.map(entry => entry.club.id));
+    const nextClubs = parsed.clubs.filter(club => !departedIds.has(club.id));
     const updates = [
       [CHECK_STORAGE_KEY, JSON.stringify(nextChecks)],
+      [DEPARTED_STORAGE_KEY, JSON.stringify(nextDeparted)],
       [SHAFT_STORAGE_KEY, JSON.stringify(parsed.shafts)],
-      [STORAGE_KEY, JSON.stringify(parsed.clubs)]
+      [STORAGE_KEY, JSON.stringify(nextClubs)]
     ];
     const previous = updates.map(([key]) => [key, safeStorageGet(key)]);
     const written = [];
@@ -1376,14 +1487,16 @@ async function pullFromGithub() {
       }
       written.push(key);
     }
-    clubs = parsed.clubs;
+    clubs = nextClubs;
     shafts = parsed.shafts;
     checkState = nextChecks;
+    departedClubs = nextDeparted;
+    departedLoadError = false;
     const remoteTime = parsed.updatedAt || new Date().toISOString();
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, remoteTime);
     safeStorageSet(LOCAL_MODIFIED_KEY, remoteTime);
     render();
-    setSyncStatus(`Pulled ${clubs.length} clubs, ${shafts.length} shafts, and ${checkState.sessions.length} checks from GitHub${parsed.checks ? '' : ' (local check history kept)'} • ${formatSyncDate(remoteTime)}`, 'ok');
+    setSyncStatus(`Pulled ${clubs.length} clubs, ${shafts.length} shafts, ${checkState.sessions.length} checks, and ${departedClubs.length} no-longer-held records from GitHub${parsed.checks ? '' : ' (local check history kept)'}${parsed.departedClubs ? '' : ' (local no-longer-held log kept)'} • ${formatSyncDate(remoteTime)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Pull failed.', 'error');
@@ -1401,14 +1514,14 @@ async function pushToGithub() {
     if (remote.exists) {
       const remoteParsed = validateRemoteInventory(remote.data);
       const remoteUpdated = remoteParsed.updatedAt;
-      if (remoteUpdated && lastKnownRemote && remoteUpdated !== lastKnownRemote && new Date(remoteUpdated) > new Date(lastKnownRemote)) {
+      if (remoteUpdated && lastKnownRemote && remoteUpdated !== lastKnownRemote) {
         const force = confirm(`GitHub has a newer inventory (${formatSyncDate(remoteUpdated)}) than this browser last synced. Pushing now could overwrite changes from another device.
 
 Cancel to Pull first.
 
 OK only if you intentionally want to overwrite the GitHub copy.`);
         if (!force) { refreshSyncStatus(); return; }
-      } else if (remoteUpdated && !lastKnownRemote) {
+      } else if (!lastKnownRemote) {
         const force = confirm(`An inventory already exists on GitHub from ${formatSyncDate(remoteUpdated)}, but this browser has never synced with it.
 
 Cancel to Pull first.
@@ -1418,7 +1531,7 @@ OK only if this browser should replace the GitHub copy.`);
       }
     }
     const updatedAt = new Date().toISOString();
-    const payload = { schemaVersion: 2, appVersion: APP_VERSION, updatedAt, clubs, shafts, checks: checkState };
+    const payload = { schemaVersion: 3, appVersion: APP_VERSION, updatedAt, clubs, shafts, checks: checkState, departedClubs };
     const apiUrl = githubContentsUrl(settings).replace(/\?ref=.*$/, '');
 
     async function putInventory(sha=null) {
@@ -1437,11 +1550,7 @@ OK only if this browser should replace the GitHub copy.`);
     }
 
     let response = await putInventory(remote.sha);
-    if (response.status === 409) {
-      setSyncStatus('GitHub changed during push. Refreshing file version and retrying…', 'warn');
-      const newestRemote = await fetchRemoteInventory(settings);
-      response = await putInventory(newestRemote.sha);
-    }
+    if (response.status === 409) throw new Error('GitHub changed during this push. Pull the latest inventory, review it, and then push again.');
     if (!response.ok) {
       let message = `GitHub returned ${response.status}.`;
       try { const detail = await response.json(); if (detail?.message) message += ` ${detail.message}`; } catch {}
@@ -1449,7 +1558,7 @@ OK only if this browser should replace the GitHub copy.`);
     }
     safeStorageSet(GITHUB_LAST_REMOTE_KEY, updatedAt);
     safeStorageSet(LOCAL_MODIFIED_KEY, updatedAt);
-    setSyncStatus(`Pushed ${clubs.length} clubs, ${shafts.length} shafts, and ${checkState.sessions.length} checks to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
+    setSyncStatus(`Pushed ${clubs.length} clubs, ${shafts.length} shafts, ${checkState.sessions.length} checks, and ${departedClubs.length} no-longer-held records to GitHub • ${formatSyncDate(updatedAt)}`, 'ok');
   } catch (error) {
     console.error(error);
     setSyncStatus(error.message || 'Push failed.', 'error');
@@ -1521,7 +1630,7 @@ function filteredClubs() {
   const q = search.value.trim().toLowerCase();
   const filtered = clubs.filter(c => {
     const locationOk = activeLocation === 'All' || c.location === activeLocation;
-    const checkOk = checkView !== 'unchecked' || !currentCheck()?.confirmations[c.id];
+    const checkOk = checkView !== 'unchecked' || !(currentCheck() || latestCheck())?.confirmations[c.id];
     const haystack = Object.values(c).join(' ').toLowerCase();
     return locationOk && checkOk && (!q || haystack.includes(q));
   });
@@ -1695,14 +1804,18 @@ function renderShafts() {
 
 function renderCheckPanel() {
   const session = currentCheck();
-  const confirmed = session ? clubs.filter(club => Boolean(session.confirmations[club.id])).length : 0;
-  const total = clubs.length;
+  const recent = session || latestCheck();
+  const total = session ? clubs.length : recent ? recent.clubSnapshots.length : clubs.length;
+  const confirmed = recent ? (session ? clubs : recent.clubSnapshots).filter(club => Boolean(recent.confirmations[club.id])).length : 0;
   const remaining = total - confirmed;
   const progress = document.getElementById('checkProgress');
-  progress.innerHTML = session
-    ? `<strong>${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(session.startedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Inventory check progress"></progress>`
+  progress.innerHTML = recent
+    ? `<strong>${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(recent.startedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Inventory check progress"></progress>`
     : '<strong>No check started</strong><span class="check-meta">Start a check to confirm the clubs you have in hand.</span>';
-  document.getElementById('newCheckBtn').textContent = session ? 'Start new check' : 'Start first check';
+  if (recent && !session) progress.innerHTML = `<strong>Last check locked: ${confirmed} of ${total} clubs confirmed · ${remaining} not confirmed</strong><span class="check-meta">Started ${esc(formatCheckDate(recent.startedAt))} · Ended ${esc(formatCheckDate(recent.closedAt))}</span><progress max="${Math.max(total, 1)}" value="${confirmed}" aria-label="Last inventory check progress"></progress>`;
+  document.getElementById('newCheckBtn').hidden = Boolean(session);
+  document.getElementById('newCheckBtn').textContent = recent ? 'Start new check' : 'Start first check';
+  document.getElementById('endCheckBtn').hidden = !session;
   [['allCheckViewBtn','all'],['uncheckedViewBtn','unchecked'],['checkHistoryBtn','history']].forEach(([id, view]) => {
     document.getElementById(id).setAttribute('aria-pressed', String(checkView === view));
   });
@@ -1710,14 +1823,14 @@ function renderCheckPanel() {
   const report = document.getElementById('checkReport');
   report.hidden = checkView !== 'unchecked';
   if (checkView === 'unchecked') {
-    const missing = clubs.filter(club => !session?.confirmations[club.id]).sort(allClubsComparator);
-    report.innerHTML = `<h3>Clubs not confirmed in ${session ? 'this check' : 'a check'}</h3>` +
-      (session
-        ? `<p>${missing.length} club${missing.length === 1 ? '' : 's'} still need${missing.length === 1 ? 's' : ''} confirmation. This report includes every inventory location.</p>`
+    const missing = recent ? clubs.filter(club => !recent.confirmations[club.id]).sort(allClubsComparator) : [];
+    report.innerHTML = `<h3>Clubs not confirmed in ${session ? 'this check' : recent ? 'the last check' : 'a check'}</h3>` +
+      (recent
+        ? `<p>${missing.length} club${missing.length === 1 ? '' : 's'} in your current inventory ${session ? 'still need' : 'were not'} confirmed. This report includes every inventory location.</p>`
         : '<p>Start a check to see which clubs have not been confirmed.</p>') +
-      (session && missing.length
+      (recent && missing.length
         ? `<ol class="check-report-list">${missing.map(club => `<li>${esc(checkClubLabel(club))}</li>`).join('')}</ol>`
-        : session ? '<p>Every club currently in the inventory is confirmed.</p>' : '');
+        : recent ? '<p>Every club currently in the inventory was confirmed.</p>' : '');
   }
 
   const history = document.getElementById('checkHistory');
@@ -1727,9 +1840,24 @@ function renderCheckPanel() {
     history.innerHTML = '<h3>Check history</h3>' + (ordered.length ? ordered.map(item => {
       const count = item.clubSnapshots.filter(club => item.confirmations[club.id]).length;
       const rows = item.clubSnapshots.slice().sort(allClubsComparator).map(club => `<li>${esc(checkClubLabel(club))} — ${item.confirmations[club.id] ? `Confirmed ${esc(formatCheckDate(item.confirmations[club.id]))}` : 'Not confirmed'}</li>`).join('');
-      return `<details><summary>${esc(formatCheckDate(item.startedAt))} · ${count} of ${item.clubSnapshots.length} confirmed${item.id === checkState.activeCheckId ? ' · Current' : ''}</summary><small>${item.closedAt ? `Next check started ${esc(formatCheckDate(item.closedAt))}` : 'Current check'}. Club details reflect the inventory when this check was made.</small><ol class="check-history-list">${rows}</ol></details>`;
+      return `<details><summary>${esc(formatCheckDate(item.startedAt))} · ${count} of ${item.clubSnapshots.length} confirmed · ${item.closedAt ? 'Locked' : 'Current'}</summary><small>${item.closedAt ? `Ended ${esc(formatCheckDate(item.closedAt))}` : 'Check in progress'}. Club details reflect the inventory when this check was made.</small><ol class="check-history-list">${rows}</ol></details>`;
     }).join('') : '<p>No checks have been recorded yet.</p>');
   }
+}
+
+function renderDepartedLog() {
+  document.getElementById('departureCount').textContent = `(${departedClubs.length})`;
+  const q = search.value.trim().toLowerCase();
+  const entries = departedClubs.filter(entry => !q || [entry.reason, entry.date, entry.notes, ...Object.values(entry.club)].join(' ').toLowerCase().includes(q))
+    .sort((a,b) => b.date.localeCompare(a.date) || b.recordedAt.localeCompare(a.recordedAt));
+  document.getElementById('departureList').innerHTML = entries.length ? entries.map(entry => `
+    <div class="departure-entry">
+      <div class="departure-entry-header"><strong>${esc(entry.reason)} · ${esc(entry.club.brand)} ${esc(entry.club.model || entry.club.club)}</strong><span>${esc(entry.date)}</span></div>
+      <small>${esc(entry.club.club)} · ${esc(entry.club.location)}${entry.club.loft ? ` · ${esc(entry.club.loft)}` : ''}${entry.club.shaft ? ` · Shaft: ${esc(entry.club.shaft)}` : ''}${entry.club.flex ? ` · ${esc(entry.club.flex)}` : ''}${entry.club.grip ? ` · Grip: ${esc(entry.club.grip)}` : ''}</small>
+      ${entry.club.notes ? `<small>Club notes: ${esc(entry.club.notes)}</small>` : ''}
+      <div class="departure-notes">${entry.notes ? esc(entry.notes) : '<span class="check-meta">No disposition notes yet.</span>'}</div>
+      <div class="actions"><button type="button" class="secondary" data-departure-edit="${esc(entry.id)}">Edit notes</button><button type="button" class="secondary" data-departure-restore="${esc(entry.id)}">Restore to inventory</button></div>
+    </div>`).join('') : `<p>${departedClubs.length ? 'No logged clubs match your search.' : 'No clubs have been marked as no longer held.'}</p>`;
 }
 
 function render() {
@@ -1757,7 +1885,7 @@ function render() {
       <td>${flexDisplay(c.flex)}</td>
       <td class="grip-cell">${gripDisplay(c.grip)}</td>
       <td>${esc(c.notes)}</td>
-      <td><div class="actions"><button class="secondary" onclick="editClub('${c.id}')">Edit</button><button class="danger" onclick="deleteClub('${c.id}')">Delete</button></div></td>
+      <td><div class="actions"><button class="secondary" onclick="editClub('${c.id}')">Edit</button><button class="secondary" data-departure-club="${esc(c.id)}">No longer have</button><button class="danger" onclick="deleteClub('${c.id}')">Delete permanently</button></div></td>
     </tr>`).join('');
   emptyState.textContent = checkView === 'unchecked' ? 'No clubs in this view still need confirmation.' : 'No clubs match this view.';
   emptyState.hidden = data.length !== 0;
@@ -1773,6 +1901,7 @@ function render() {
   document.getElementById('bag1Count').closest('.stat').classList.toggle('over-limit', bag1 > 14);
   document.getElementById('bag2Count').closest('.stat').classList.toggle('over-limit', bag2 > 14);
   renderCheckPanel();
+  renderDepartedLog();
 }
 
 
@@ -2076,15 +2205,96 @@ window.deleteClub = id => {
   render();
 };
 
+const departureDialog = document.getElementById('departureDialog');
+const departureForm = document.getElementById('departureForm');
+function todayLocal() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+}
+function openDepartureForm(clubId='', entryId='') {
+  const entry = entryId ? departedClubs.find(item => item.id === entryId) : null;
+  const club = entry?.club || clubs.find(item => item.id === clubId);
+  if (!club) return;
+  document.getElementById('departureDialogTitle').textContent = entry ? 'Edit no-longer-held record' : 'Mark club as no longer held';
+  document.getElementById('departureClubLabel').textContent = checkClubLabel(club);
+  document.getElementById('departureClubId').value = club.id;
+  document.getElementById('departureEntryId').value = entry?.id || '';
+  document.getElementById('departureReason').value = entry?.reason || 'Sold';
+  document.getElementById('departureDate').value = entry?.date || todayLocal();
+  document.getElementById('departureNotes').value = entry?.notes || '';
+  document.getElementById('saveDepartureBtn').textContent = entry ? 'Save log changes' : 'Move club to log';
+  departureDialog.showModal();
+}
+body.addEventListener('click', event => {
+  const button = event.target.closest('[data-departure-club]');
+  if (button) openDepartureForm(button.dataset.departureClub);
+});
+document.getElementById('departureList').addEventListener('click', event => {
+  const edit = event.target.closest('[data-departure-edit]');
+  if (edit) { openDepartureForm('', edit.dataset.departureEdit); return; }
+  const restore = event.target.closest('[data-departure-restore]');
+  if (!restore) return;
+  const entry = departedClubs.find(item => item.id === restore.dataset.departureRestore);
+  if (!entry) return;
+  if (clubs.some(club => club.id === entry.club.id)) { alert('This club is already in the active inventory.'); return; }
+  if (!confirm(`Restore ${entry.club.brand} ${entry.club.model || entry.club.club} to the active inventory?`)) return;
+  const nextChecks = structuredClone(checkState);
+  const active = nextChecks.sessions.find(item => item.id === nextChecks.activeCheckId);
+  if (active && !active.clubSnapshots.some(item => item.id === entry.club.id)) active.clubSnapshots.push(clubSnapshot(entry.club));
+  saveInventoryBundle([...clubs, entry.club], departedClubs.filter(item => item.id !== entry.id), nextChecks);
+});
+document.getElementById('cancelDepartureBtn').addEventListener('click', () => departureDialog.close());
+departureForm.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!departureForm.reportValidity()) return;
+  const clubId = document.getElementById('departureClubId').value;
+  const entryId = document.getElementById('departureEntryId').value;
+  const reason = document.getElementById('departureReason').value;
+  const date = document.getElementById('departureDate').value;
+  const notes = document.getElementById('departureNotes').value.trim();
+  if (!['Sold','Traded','No longer have'].includes(reason) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  if (entryId) {
+    const original = departedClubs.find(item => item.id === entryId);
+    if (!original) return;
+    const nextDeparted = departedClubs.map(item => item.id === entryId ? {...item, reason, date, notes} : item);
+    if (saveInventoryBundle(clubs, nextDeparted, checkState)) departureDialog.close();
+    return;
+  }
+  const club = clubs.find(item => item.id === clubId);
+  if (!club) return;
+  const entry = {id:newId(), club:structuredClone(club), reason, date, recordedAt:new Date().toISOString(), notes};
+  const nextChecks = structuredClone(checkState);
+  const active = nextChecks.sessions.find(item => item.id === nextChecks.activeCheckId);
+  if (active) {
+    active.clubSnapshots = active.clubSnapshots.filter(item => item.id !== clubId);
+    delete active.confirmations[clubId];
+  }
+  if (saveInventoryBundle(clubs.filter(item => item.id !== clubId), [...departedClubs, entry], nextChecks)) {
+    departureDialog.close();
+    document.getElementById('departurePanel').open = true;
+  }
+});
+
 document.getElementById('newCheckBtn').addEventListener('click', () => {
-  const existing = currentCheck();
+  if (currentCheck()) return;
   saveCheckChange(() => {
     const now = new Date().toISOString();
-    if (existing) existing.closedAt = now;
     const next = { id: newId(), startedAt: now, closedAt: null, clubSnapshots: clubs.map(clubSnapshot), confirmations: {} };
     checkState.sessions.push(next);
     checkState.activeCheckId = next.id;
     checkView = 'all';
+  });
+});
+document.getElementById('endCheckBtn').addEventListener('click', () => {
+  const existing = currentCheck();
+  if (!existing) return;
+  const confirmed = clubs.filter(club => existing.confirmations[club.id]).length;
+  if (!confirm(`End and lock this inventory check? ${confirmed} of ${clubs.length} clubs are confirmed. You will not be able to change its checkmarks afterward.`)) return;
+  saveCheckChange(() => {
+    existing.closedAt = new Date().toISOString();
+    existing.clubSnapshots = clubs.map(clubSnapshot);
+    checkState.activeCheckId = null;
+    checkView = 'history';
   });
 });
 body.addEventListener('change', event => {
@@ -2199,22 +2409,16 @@ form.addEventListener('submit', e => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   const firstConfirmed = confirm(
-    'Reset all inventory data? This will replace your current clubs with the built-in starter inventory and delete all loose shafts and physical-check history.'
+    'Reset all inventory data? This will replace your current clubs with the built-in starter inventory and delete all loose shafts, physical-check history, and no-longer-held records.'
   );
   if (!firstConfirmed) return;
 
   const finalConfirmed = confirm(
-    'Are you absolutely sure? This permanently removes all browser edits, loose shafts, and check history. This action cannot be undone.'
+    'Are you absolutely sure? This permanently removes all browser edits, loose shafts, check history, and the no-longer-held log. This action cannot be undone.'
   );
   if (!finalConfirmed) return;
 
-  clubs = cloneStarterData();
-  shafts = [];
-  checkState = { sessions: [], activeCheckId: null };
-  saveData();
-  saveShaftData();
-  saveCheckData();
-  render();
+  saveInventoryBundle(cloneStarterData(), [], { sessions: [], activeCheckId: null }, []);
 });
 
 document.getElementById('exportBtn').addEventListener('click', () => {
@@ -2223,9 +2427,12 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   const rows = clubs.map(c => [exportNumbers[c.id],c.location,c.club,c.brand,c.model,c.loft,c.shaft,c.flex,c.grip,c.notes]);
   const shaftHeaders = ['Inventory Type','Make','Model','Adapter','Weight','Suggested Club','Stiffness','Notes'];
   const shaftRows = shafts.map(s => ['Shaft',s.make,s.model,s.adapter,s.weight,s.suggestedClub,s.stiffness,s.notes]);
+  const departureHeaders = ['Record Type','Date','Reason','Location','Club','Brand','Model','Loft','Shaft','Flex','Grip','Club Notes','Disposition Notes'];
+  const departureRows = departedClubs.map(entry => ['No longer held',entry.date,entry.reason,entry.club.location,entry.club.club,entry.club.brand,entry.club.model,entry.club.loft,entry.club.shaft,entry.club.flex,entry.club.grip,entry.club.notes,entry.notes]);
   const clubRows = [headers,...rows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
   const shaftCsv = [shaftHeaders,...shaftRows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const csv = clubRows + '\n\n' + shaftCsv;
+  const departureCsv = [departureHeaders,...departureRows].map(row => row.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const csv = clubRows + '\n\n' + shaftCsv + '\n\n' + departureCsv;
   const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download='golf-club-inventory.csv'; a.click(); URL.revokeObjectURL(url);
